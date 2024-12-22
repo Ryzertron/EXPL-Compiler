@@ -1,7 +1,4 @@
-#ifndef TREE_H
-
-#define TREE_H
-
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,5 +19,3 @@ int eval(node root);
 void prefix(node root);
 
 void postfix(node root);
-
-#endif
