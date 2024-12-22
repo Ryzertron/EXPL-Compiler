@@ -1,7 +1,7 @@
 MOV R1, SP
 MOV R2, 5
 SUB R1, R2
-MOV R2, "Write"
+MOV R2, "WRITE"
 MOV R1, [R1]
 EQ R1, R2
 JZ R1, 62
@@ -32,7 +32,7 @@ MOV [R2], R1
 MOV R1, SP
 MOV R2, 5
 SUB R1, R2
-MOV R2, "Read"
+MOV R2, "READ"
 MOV R1, [R1]
 EQ R1, R2
 JZ R1, 124
@@ -63,7 +63,7 @@ MOV [R2], R1
 MOV R1, SP
 MOV R2, 5
 SUB R1, R2
-MOV R2, "Exit"
+MOV R2, "EXIT"
 MOV R1, [R1]
 EQ R1, R2
 JZ R1, 186

@@ -1,57 +1,43 @@
+/*
+---------------------Syntax Tree Functions---------------------------
+This file contains the functions that concerns the syntax tree.
+As we move up the stages the functions which needs excessive modification or 
+refactoring will be reimplemented. Changes since last commit is briefed below.
+---------------------------------------------------------------------
+
+-----------------Changelog [Previous Commit 0e9da633]----------------
+    - Generalised existing functions for node creation of any type.
+    - eval function is commented for now. Might use it for debugging in future.
+    - Removed the old function as they are redundant.
+---------------------------------------------------------------------
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "tree.h"
 
-node leafNode(int val){
+node createSyntaxNode(tnodeType type, subType subtype, data content, node left, node right){
     node temp = (node)malloc(sizeof(tnode));
-    temp -> value = val;
-    temp -> op = NULL;
-    temp -> left = NULL;
-    temp -> right = NULL;
-    return temp;
-}
-
-node opNode(char op,node left, node right){
-    node temp = (node)malloc(sizeof(tnode));
-    temp -> op = (char*)malloc(sizeof(char));
-    *(temp -> op) = op;
-    temp -> left = left;
+    temp -> type = type;
+    temp -> subtype = subtype;
+    temp -> content = content;
     temp -> right = right;
+    temp -> left = left;
     return temp;
 }
 
-int eval(node root){
-    if (root -> op == NULL) return root -> value;
-    else {
-        switch(*(root -> op)){
-            case '+' : return eval(root -> left) + eval(root -> right);
-                break;
-            case '-' : return eval(root -> left) - eval(root -> right);
-                break;
-            case '*' : return eval(root -> left) * eval(root -> right);
-                break;
-            case '/' : return eval(root -> left) / eval(root -> right);
-        }
-    }
-}
-
-void prefix(node root){
-    if (!root) return;
-    if (root -> op == NULL) printf(" %d",root -> value);
-    else                    printf(" %s",root -> op);
-    prefix(root -> left);
-    prefix(root -> right);
-}
-
-void postfix(node root){
-    if (!root) return;
-    postfix(root -> left);
-    postfix(root -> right);
-    if (root -> op == NULL) printf(" %d", root -> value);
-    else printf(" %s", root -> op);
-}
-
-
-
-
+// int eval(node root){
+//     if (root -> op == NULL) return root -> value;
+//     else {
+//         switch(*(root -> op)){
+//             case '+' : return eval(root -> left) + eval(root -> right);
+//                 break;
+//             case '-' : return eval(root -> left) - eval(root -> right);
+//                 break;
+//             case '*' : return eval(root -> left) * eval(root -> right);
+//                 break;
+//             case '/' : return eval(root -> left) / eval(root -> right);
+//         }
+//     }
+// }
 
