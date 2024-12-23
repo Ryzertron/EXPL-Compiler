@@ -5,11 +5,8 @@ function declarations for Syntax Tree building. Changes since the
 last commit is briefed below
 ------------------------------------------------------
 
---------Changelog [Previous Commit 26912e5]----------
-    - Added more documentation
-    - Added Node types and subtypes for control,loop and jump statements
-    - Added Node types for relational operators
-    - Refactored old node types to use Subtypes
+--------Changelog [Previous Commit dbf1d30]----------
+    - No Changes
 ------------------------------------------------------
 */
 

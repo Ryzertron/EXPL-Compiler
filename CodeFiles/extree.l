@@ -4,9 +4,9 @@ Lexer generate tokens from the input expl program.
 Changes since previous commit is briefed below
 --------------------------------------------------
 
--------Changelog [Previous Commit 0e9da633]-------
- - Added rules for variable names. only one character is allowed for now.
- - Changed function calls according to their change in definition.
+-------Changelog [Previous Commit dbf1d30]-------
+    - Added new rules for relational operators.
+    - Added new rules for control,jump,loop statements.
  -------------------------------------------------
 */
 
@@ -17,31 +17,58 @@ Changes since previous commit is briefed below
 
 %%
 
-[0-9]+  {
-            yylval.root = createSyntaxNode(T_CONST,none,(data){.value = atoi(yytext)},NULL,NULL);
-            return NUMBER;
-        }
+//Immediate
+[0-9]+      {
+                yylval.root = createSyntaxNode(T_CONST,none,(data){.value = atoi(yytext)},NULL,NULL);
+                return NUMBER;
+            }
 
-[a-z]   {   
-            char * temp = (char*)malloc(sizeof(char));
-            strcpy(temp,yytext);
-            yylval.root = createSyntaxNode(T_VAR,VAR_CHAR,(data){.varname = temp},NULL,NULL);
-            return VAR;
-        }
+//Identifier
+[a-z]       {   
+                char * temp = (char*)malloc(sizeof(char));
+                strcpy(temp,yytext);
+                yylval.root = createSyntaxNode(T_VAR,S_CHAR,(data){.varname = temp},NULL,NULL);
+                return VAR;
+            }
 
-"+"     {return ADD;}
-"-"     {return SUB;}
-"*"     {return MUL;}
-"/"     {return DIV;}
-"="     {return ASSIGN;}
-";"     {return DELIM;}
-"read"  {return READ;}
-"write" {return WRITE;}
-"begin" {return SBLOCK;}
-"end"   {return EBLOCK;}
-[ \t]    {}
-[()]    {return *yytext;}
-[\n]    {}
+//Arithmetic
+"+"         {return ADD;}
+"-"         {return SUB;}
+"*"         {return MUL;}
+"/"         {return DIV;}
+"="         {return ASSIGN;}
+
+//Relational
+"<"         {return LT;}
+">"         {return GT;}
+"<="        {return LE;}
+">="        {return GE;}
+"=="        {return EQ;}
+"!="        {return NE;}
+
+//Control
+"if"        {return IF;}
+"else"      {return ELSE;}
+"endif"     {return ENDIF;}
+
+//Loops
+"while"     {return WHILE;}
+"do"        {return DO;}
+"endwhile"  {return ENDWHILE;}
+
+//IO
+"read"      {return READ;}
+"write"     {return WRITE;}
+
+//Syntax
+"begin"     {return SBLOCK;}
+"end"       {return EBLOCK;}
+";"         {return DELIM;}
+
+//whitespace
+[ \t]       {}
+[()]        {return *yytext;}
+[\n]        {}
 
 %%
 
