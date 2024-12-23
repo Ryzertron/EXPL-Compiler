@@ -5,9 +5,11 @@ function declarations for Syntax Tree building. Changes since the
 last commit is briefed below
 ------------------------------------------------------
 
---------Changelog [Previous Commit 0e9da633]----------
-    - defined new enums and a union for generalising node creation
-    - deleted old function declarations.
+--------Changelog [Previous Commit 26912e5]----------
+    - Added more documentation
+    - Added Node types and subtypes for control,loop and jump statements
+    - Added Node types for relational operators
+    - Refactored old node types to use Subtypes
 ------------------------------------------------------
 */
 
@@ -21,25 +23,44 @@ union data{         // union is used to hold data for different type of nodes
     int value;      // value for constants
 } typedef data;
 
-enum tnodeType{     // denotes the type of the syntax node
-        T_READ,
-        T_WRITE,
-        T_CONN,
-        T_OPER,
-        T_VAR,
-        T_CONST
+enum tnodeType{     // denotes the class of syntax node. Usage is specified below. (No value means content.value = 0)(No subtype means subtype = none)
+        T_CONN,     // Connector with two children. No value or subtype.
+        T_IO,       // Node for IO statement. Subtype determines input or output.
+        T_ASSG,     // Assginment statement with two children. No subtype or values.
+        T_ARITH,    // Arithmetic ops with two children. Subtype defines the operation.
+        T_REL,      // Relational ops with two children. Subtype defines the operation.
+        T_VAR,      // Identifier nodes with zero children. Subtype shows type of variable and content.varname holds pointer to name
+        T_CONST,    // Nodes that contains immediate values. content.value holds the value. No children
+        T_JUMP,     // Jump statements like break, continue etc. Subtype identifies the the statement. No value. No children
+        T_CTRL,     // Control statements like IF and IF-ELSE constructs
+        T_LOOP,     // Loop nodes. Subtype identify which type of loop.
 }typedef tnodeType;
 
-enum subType{       // denotes the type of variable or operator if the node is type of variable or operator
+enum subType{       // Subtypes identify different types of nodes in a node class 
         none,       // placeholder while using other node types
-        VAR_INT,
-        VAR_FLOAT,
-        VAR_CHAR,
-        OP_ADD,
-        OP_SUB,
-        OP_MUL,
-        OP_DIV,
-        OP_ASSG,
+        S_READ,     // Read statements with a single child (left).
+        S_WRITE,    // Write statements with a single child (left).
+        S_INT,      // Identifier class - 'int'
+        S_FLOAT,    // Identifier class - 'float'
+        S_CHAR,     // Identifier class - 'char'
+        S_ADD,      // '+' operator
+        S_SUB,      // '-' operator
+        S_MUL,      // '*' operator
+        S_DIV,      // '/' operator 
+        S_LT,       // '<' operator    
+        S_GT,       // '>' operator
+        S_LE,       // '<=' operator
+        S_GE,       // '>=' operator
+        S_EQ,       // '==' operator
+        S_NE,       // '!=' operator
+        S_IF,       // IF node with expr and then nodes as children. No subtype and No value.
+        S_THEN,     // THEN nodes with true statements and NULL(false statements for IF-ELSE constructs) as children. No subtype and No value.
+        S_BREAK,    // Break statements with no children.
+        S_BRKP,     // Breakpoint statement used for debugging. (Breakpoint is not a jump statement.)
+        S_CONT,     // Continue statement with no children.
+        S_WHILE,    // While loop with expr on left and statements on the right.
+        S_REPEAT,   // Repeat...until loop with statement on left and expr on right.
+        S_DWHILE    // Do...while loop with statement on left and expr on the right. 
 }typedef subType;
 
 struct tnode {      // Syntax Node Structure
