@@ -1,4 +1,3 @@
-
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,10 +6,20 @@
 #define reg_index int
 
 #define STACKBASE 4096
-#define SP 5096
-#define BP 5097
+#define SP 4121
+#define BP 4122
+
+struct loopStackElement {
+    int start; // Start Label
+    int end; // End Label
+    struct loopStackElement * down;
+} typedef LSE;
+
+LSE * LTOP = NULL;
 
 extern int LR; //Track Last Used Register
+
+extern int LL; //Track Last used Label
 
 int getReg(); // Allocate a free register
 
@@ -27,4 +36,17 @@ int getAddress(char* varname); // Macro for fetching address from variable name 
 void initxsm(FILE * target); // Initialising the .xsm file with headers and instruction to set SP and BP
 
 void endxsm(FILE * target); // macro for calling exit system call
+
+int getLabel(); // Create and return a new label
+
+void LSPush(int start, int end); // Push a label set into the Loopstack 
+
+void LSPop(); // Pop the top element from the loop stack
+
+int getLSStart(); // get start label of the top loop
+
+int getLSEnd(); // get end label of the top loop
+
+
+
 
