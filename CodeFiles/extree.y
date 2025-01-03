@@ -5,10 +5,9 @@ As we move up the stages changes will be made to the existing rules.
 Changes that was made since the previous commit will be briefed below.
 ------------------------------------------------
 
-------Changelog [Previous Commit dbf1d30]------
-    - Added new rules for control, loop and jump statements
-    - Added rules for relation expressions
-    - Changed function calls according to their change in definition(Refactored).
+------Changelog [Previous Commit c3b8b4]------
+    - Some of the CFGs were found useless and hence refactored
+    - Bug related to rptstmnt is resolved.
 ------------------------------------------------
 */
 
@@ -34,9 +33,7 @@ int yylex(void);
 %token WHILE DO ENDWHILE REPEAT UNTIL
 %token BREAK CONTINUE
 %token BRKP
-%type <root> program expr statements stmnt ipstmnt opstmnt astmnt ifstmnt
-%type <root> whilestmnt dowhilestmnt rptstmnt
-%type <root> brkstmnt contstmnt brkpstmnt
+%type <root> program expr statements stmnt
 %left ADD SUB
 %left MUL DIV
 %left GE LE NE
@@ -61,48 +58,23 @@ program: SBLOCK statements EBLOCK DELIM {
 statements: statements stmnt        {$$ = createSyntaxNode(T_CONN, none, (data){.value = 0}, $<root>1, $<root>2);}
           | stmnt                   {$$ = $<root>1;};
 
-stmnt: ipstmnt                      {$$ = $<root>1;}
-     | opstmnt                      {$$ = $<root>1;}
-     | astmnt                       {$$ = $<root>1;}
-     | ifstmnt                      {$$ = $<root>1;}
-     | whilestmnt                   {$$ = $<root>1;}
-     | brkstmnt                     {$$ = $<root>1;}
-     | contstmnt                    {$$ = $<root>1;}
-     | brkpstmnt                    {$$ = $<root>1;};
-     | dowhilestmnt                 
-
-ipstmnt: READ '(' VAR ')' DELIM     {$$ = createSyntaxNode(T_IO, S_READ, (data){.value = 0}, $<root>3, NULL);};
-
-opstmnt: WRITE '(' expr ')' DELIM   {$$ = createSyntaxNode(T_IO, S_WRITE, (data){.value = 0}, $<root>3, NULL);};
-
-astmnt : VAR ASSIGN expr DELIM      {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3);};
-
-ifstmnt : IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM       {
-                                                                                node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, $<root>8); 
-                                                                                $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
-                                                                            }
-        | IF '(' expr ')' THEN statements ENDIF DELIM                       {
-                                                                                node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, NULL); //Supply NULL instead of ELSE
-                                                                                $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
-                                                                            };
-
-whilestmnt : WHILE '(' expr ')' DO statements ENDWHILE DELIM                {
-                                                                                $$ = createSyntaxNode(T_LOOP, S_WHILE, (data){.value = 0}, $<root>3, $<root>6);
-                                                                            };
-
-dowhilestmnt : DO statements WHILE '(' expr ')' DELIM                       {
-                                                                                $$ = createSyntaxNode(T_LOOP, S_DWHILE, (data){.value = 0}, $<root>2, $<root>5);
-                                                                            };
-
-rptstmnt : REPEAT statements UNTIL '(' expr ')' DELIM                       {
-                                                                                $$ = createSyntaxNode(T_LOOP, S_REPEAT, (data){.value = 0}, $<root>2, $<root>5);
-                                                                            };
-
-brkstmnt : BREAK DELIM              {$$ = createSyntaxNode(T_JUMP, S_BREAK, (data){.value = 0}, NULL, NULL);};
-
-contstmnt : CONTINUE DELIM          {$$ = createSyntaxNode(T_JUMP, S_CONT, (data){.value = 0}, NULL, NULL);};
-
-brkpstmnt : BRKP DELIM              {$$ = createSyntaxNode(T_JUMP, S_BRKP, (data){.value = 0}, NULL, NULL);};
+stmnt: READ '(' VAR ')' DELIM                                           {$$ = createSyntaxNode(T_IO, S_READ, (data){.value = 0}, $<root>3, NULL);}
+     | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_IO, S_WRITE, (data){.value = 0}, $<root>3, NULL);}
+     | VAR ASSIGN expr DELIM                                            {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3);}
+     | IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM      {
+                                                                            node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, $<root>8); 
+                                                                            $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
+                                                                        }
+     | IF '(' expr ')' THEN statements ENDIF DELIM                      {
+                                                                            node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, NULL); //Supply NULL instead of ELSE
+                                                                            $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
+                                                                        }
+     | WHILE '(' expr ')' DO statements ENDWHILE DELIM                  {$$ = createSyntaxNode(T_LOOP, S_WHILE, (data){.value = 0}, $<root>3, $<root>6);}
+     | BREAK DELIM                                                      {$$ = createSyntaxNode(T_JUMP, S_BREAK, (data){.value = 0}, NULL, NULL);}
+     | CONTINUE DELIM                                                   {$$ = createSyntaxNode(T_JUMP, S_CONT, (data){.value = 0}, NULL, NULL);};
+     | BRKP DELIM                                                       {$$ = createSyntaxNode(T_JUMP, S_BRKP, (data){.value = 0}, NULL, NULL);};
+     | DO statements WHILE '(' expr ')' DELIM                           {$$ = createSyntaxNode(T_LOOP, S_DWHILE, (data){.value = 0}, $<root>2, $<root>5);}               
+     | REPEAT statements UNTIL '(' expr ')' DELIM                       {$$ = createSyntaxNode(T_LOOP, S_REPEAT, (data){.value = 0}, $<root>2, $<root>5);};
 
 expr: expr ADD expr                 {$$ = createSyntaxNode(T_ARITH, S_ADD, (data){.value = 0}, $<root>1, $<root>3);}
     | expr SUB expr                 {$$ = createSyntaxNode(T_ARITH, S_SUB, (data){.value = 0}, $<root>1, $<root>3);}
