@@ -15,7 +15,7 @@ ref     L[0-9]+\n
 
 {decl}  {   
             if (isFirst) {
-                newLabel(LINE, LTtext, 2);
+                newLabel(LTtext);
             }
         }
 
@@ -24,7 +24,7 @@ ref     L[0-9]+\n
                 LINE++;
             }
             else {
-                int address = getAddr(LTtext,1);
+                int address = getAddr(LTtext);
                 fprintf(output, "%d\n", address);
             }
         }

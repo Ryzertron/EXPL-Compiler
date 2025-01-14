@@ -11,7 +11,7 @@ struct LinkedList {
 typedef LinkedList* lnode;
 extern lnode HEAD;
 extern int LINE;
-int getAddr(char * name, int offset);
-void newLabel(int line, char * name, int offset);
+int getAddr(char * name);
+void newLabel(char * name);
 void printLabels();
 void translate();

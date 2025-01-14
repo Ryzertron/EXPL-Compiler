@@ -3,23 +3,23 @@
 int LINE = -7;
 lnode HEAD = NULL;
 
-void newLabel(int line, char * name, int offset) {
+void newLabel(char * name) {
     lnode temp = (lnode)malloc(sizeof(LinkedList));
-    temp -> addr = CODE_START + 2 * (line - 1);
+    temp -> addr = CODE_START + 2 * (LINE - 1);
     temp -> name = (char*)malloc(sizeof(char) * 10);
     strcpy(temp -> name, name);
-    temp -> name[strlen(temp -> name)-offset] = '\0';
+    temp -> name[strlen(temp -> name)-2] = '\0';
     temp -> next = HEAD;
     HEAD = temp;
 }
 
-int getAddr(char * name, int offset) {
+int getAddr(char * name) {
     if(!HEAD){
         fprintf(stderr, "Label list Empty\n");
         exit(1);
     }
 
-    name[strlen(name) - offset] = '\0';
+    name[strlen(name) - 1] = '\0';
     lnode curr = HEAD;
     while(curr) {
         if (!strcmp(curr -> name, name)) {
