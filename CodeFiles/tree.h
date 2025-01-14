@@ -70,5 +70,6 @@ struct tnode {      // Syntax Node Structure
 typedef tnode* node;
 
 node createSyntaxNode(tnodeType type, subType subtype, data content, node left, node right);
+int compatible(tnodeType type, node left, node right);
 
 // int eval(node root);

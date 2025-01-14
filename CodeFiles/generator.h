@@ -15,7 +15,7 @@ struct loopStackElement {
     struct loopStackElement * down;
 } typedef LSE;
 
-LSE * LTOP = NULL;
+extern LSE * LTOP;
 
 extern int LR; //Track Last Used Register
 

@@ -43,6 +43,7 @@ Changes since previous commit is briefed below
 
 "if"        {return IF;}
 "else"      {return ELSE;}
+"then"      {return THEN;}
 "endif"     {return ENDIF;}
 
 "while"     {return WHILE;}

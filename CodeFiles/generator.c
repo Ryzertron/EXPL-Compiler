@@ -17,7 +17,7 @@ for xsm simulator. Changes since the last commit is briefed below
 
 int LR = -1;    // Track Registers
 int LL = -1;    // Track Labels
-
+LSE* LTOP = NULL;
 int getReg(){
     if(LR == 19){
         printf("Error: No more registers available\n");

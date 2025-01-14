@@ -14,6 +14,7 @@ Changes that was made since the previous commit will be briefed below.
 %{
 #include "tree.h"
 #include "generator.h"
+#include "label.h"
 void yyerror(char const * s);
 extern FILE* yyin;
 int yylex(void);
@@ -43,17 +44,19 @@ int yylex(void);
 
 
 program: SBLOCK statements EBLOCK DELIM {
-                                        FILE* target = fopen("temp.xsm","w");
-                                        initxsm(target);
-                                        codeGen($<root>2,target);
-                                        endxsm(target);
-                                        if (target) fclose(target);
-                                        exit(0);
-                                    }
+                                            FILE* target = fopen("temp.xsm","w");
+                                            initxsm(target);
+                                            codeGen($<root>2,target);
+                                            endxsm(target);
+                                            fclose(target);
+                                            translate();
+                                            remove("temp.xsm");
+                                            exit(0);
+                                        }
        | SBLOCK EBLOCK DELIM            {
-                                        printf("No Logic found\n");
-                                        exit(1);
-                                    };
+                                            printf("No Logic found\n");
+                                            exit(1);
+                                        };
 
 statements: statements stmnt        {$$ = createSyntaxNode(T_CONN, none, (data){.value = 0}, $<root>1, $<root>2);}
           | stmnt                   {$$ = $<root>1;};

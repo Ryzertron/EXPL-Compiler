@@ -5,10 +5,8 @@ As we move up the stages the functions which needs excessive modification or
 refactoring will be reimplemented. Changes since last commit is briefed below.
 ---------------------------------------------------------------------
 
------------------Changelog [Previous Commit 0e9da633]----------------
-    - Generalised existing functions for node creation of any type.
-    - eval function is commented for now. Might use it for debugging in future.
-    - Removed the old function as they are redundant.
+-----------------Changelog [Previous Commit 267e5ca]----------------
+    - Added Semantic Analysis function | Not tested
 ---------------------------------------------------------------------
 */
 
@@ -17,6 +15,12 @@ refactoring will be reimplemented. Changes since last commit is briefed below.
 #include "tree.h"
 
 node createSyntaxNode(tnodeType type, subType subtype, data content, node left, node right){
+    if(type == T_ARITH || type == T_REL || type == T_ASSG){
+        if (!compatible(type,left,right)) {
+            fprintf(stderr, "Type Error\n");
+            exit(1);
+        }
+    }
     node temp = (node)malloc(sizeof(tnode));
     temp -> type = type;
     temp -> subtype = subtype;
@@ -26,6 +30,14 @@ node createSyntaxNode(tnodeType type, subType subtype, data content, node left, 
     return temp;
 }
 
+int compatible(tnodeType type, node left, node right) {
+    if(type == T_ARITH || T_REL)
+        return  (left -> type == T_CONST || left -> type == T_ARITH || left -> subtype == S_INT) && 
+                (right -> type == T_CONST || right -> type == T_ARITH || right -> subtype == S_INT);
+    if (type == T_ASSG)
+        return  (left -> subtype == S_INT) && 
+                (right -> type == T_CONST || right -> type == T_ARITH || right -> subtype == S_INT);
+}
 // int eval(node root){
 //     if (root -> op == NULL) return root -> value;
 //     else {
