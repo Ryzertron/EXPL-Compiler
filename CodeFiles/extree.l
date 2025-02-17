@@ -17,14 +17,14 @@ Changes since previous commit is briefed below
 %%
 
 [0-9]+      {
-                yylval.root = createSyntaxNode(T_CONST,none,(data){.value = atoi(yytext)},NULL,NULL);
+                yylval.root = createSyntaxNode(T_CONST,D_INT,(data){.value = atoi(yytext)},NULL,NULL);
                 return NUMBER;
             }
 
 [a-z]       {   
                 char * temp = (char*)malloc(sizeof(char));
                 strcpy(temp,yytext);
-                yylval.root = createSyntaxNode(T_VAR,S_INT,(data){.varname = temp},NULL,NULL);
+                yylval.root = createSyntaxNode(T_VAR, D_INT,(data){.varname = temp},NULL,NULL);
                 return VAR;
             }
 
@@ -49,6 +49,12 @@ Changes since previous commit is briefed below
 "while"     {return WHILE;}
 "do"        {return DO;}
 "endwhile"  {return ENDWHILE;}
+"break"     {return BREAK;}
+"continue"  {return CONTINUE;}
+
+"repeat" {return REPEAT;}
+"until"     {return UNTIL;}
+
 
 "read"      {return READ;}
 "write"     {return WRITE;}

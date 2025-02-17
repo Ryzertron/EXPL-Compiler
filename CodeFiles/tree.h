@@ -22,54 +22,47 @@ union data{         // union is used to hold data for different type of nodes
 
 enum tnodeType{     // denotes the class of syntax node. Usage is specified below. (No value means content.value = 0)(No subtype means subtype = none)
         T_CONN,     // Connector with two children. No value or subtype.
-        T_IO,       // Node for IO statement. Subtype determines input or output.
         T_ASSG,     // Assginment statement with two children. No subtype or values.
-        T_ARITH,    // Arithmetic ops with two children. Subtype defines the operation.
-        T_REL,      // Relational ops with two children. Subtype defines the operation.
         T_VAR,      // Identifier nodes with zero children. Subtype shows type of variable and content.varname holds pointer to name
         T_CONST,    // Nodes that contains immediate values. content.value holds the value. No children
-        T_JUMP,     // Jump statements like break, continue etc. Subtype identifies the the statement. No value. No children
-        T_CTRL,     // Control statements like IF and IF-ELSE constructs
-        T_LOOP,     // Loop nodes. Subtype identify which type of loop.
+        T_READ,     // Read statements with a single child (left).
+        T_WRITE,    // Write statements with a single child (left).
+        T_ADD,      // '+' operator
+        T_SUB,      // '-' operator
+        T_MUL,      // '*' operator
+        T_DIV,      // '/' operator 
+        T_LT,       // '<' operator    
+        T_GT,       // '>' operator
+        T_LE,       // '<=' operator
+        T_GE,       // '>=' operator
+        T_EQ,       // '==' operator
+        T_NE,       // '!=' operator
+        T_IF,       // IF node with expr and then nodes as children. No subtype and No value.
+        T_THEN,     // THEN nodes with true statements and NULL(false statements for IF-ELSE constructs) as children. No subtype and No value.
+        T_BREAK,    // Break statements with no children.
+        T_BRKP,     // Breakpoint statement used for debugging. (Breakpoint is not a jump statement.)
+        T_CONT,     // Continue statement with no children.
+        T_WHILE,    // While loop with expr on left and statements on the right.
+        T_REPEAT,   // Repeat...until loop with statement on left and expr on right.
+        T_DWHILE    // Do...while loop with statement on left and expr on the right. 
 }typedef tnodeType;
 
-enum subType{       // Subtypes identify different types of nodes in a node class 
-        none,       // placeholder while using other node types
-        S_READ,     // Read statements with a single child (left).
-        S_WRITE,    // Write statements with a single child (left).
-        S_INT,      // Identifier class - 'int'
-        S_FLOAT,    // Identifier class - 'float'
-        S_CHAR,     // Identifier class - 'char'
-        S_ADD,      // '+' operator
-        S_SUB,      // '-' operator
-        S_MUL,      // '*' operator
-        S_DIV,      // '/' operator 
-        S_LT,       // '<' operator    
-        S_GT,       // '>' operator
-        S_LE,       // '<=' operator
-        S_GE,       // '>=' operator
-        S_EQ,       // '==' operator
-        S_NE,       // '!=' operator
-        S_IF,       // IF node with expr and then nodes as children. No subtype and No value.
-        S_THEN,     // THEN nodes with true statements and NULL(false statements for IF-ELSE constructs) as children. No subtype and No value.
-        S_BREAK,    // Break statements with no children.
-        S_BRKP,     // Breakpoint statement used for debugging. (Breakpoint is not a jump statement.)
-        S_CONT,     // Continue statement with no children.
-        S_WHILE,    // While loop with expr on left and statements on the right.
-        S_REPEAT,   // Repeat...until loop with statement on left and expr on right.
-        S_DWHILE    // Do...while loop with statement on left and expr on the right. 
-}typedef subType;
+enum dType{       // Subtypes identify different types of nodes in a node class 
+        none,     // placeholder while using other node types
+        D_INT,    // INT identifier type  
+        D_CHAR    // Char identifier type
+}typedef dType;
 
 struct tnode {      // Syntax Node Structure
     tnodeType type;
-    subType subtype;
+    dType dtype;
     data content;
     struct tnode* left;
     struct tnode* right;
 }typedef tnode;
 typedef tnode* node;
 
-node createSyntaxNode(tnodeType type, subType subtype, data content, node left, node right);
-int compatible(tnodeType type, node left, node right);
+node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right);
+void compatible(node type);
 
-// int eval(node root);
+int eval(node root, int* variable);

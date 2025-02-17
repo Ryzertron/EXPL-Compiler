@@ -15,12 +15,13 @@ Changes that was made since the previous commit will be briefed below.
 #include "tree.h"
 #include "generator.h"
 #include "label.h"
+int variable[26];
 void yyerror(char const * s);
 extern FILE* yyin;
 int yylex(void);
 %}
 
-%union{
+%union {
     struct tnode* root;
 }
 
@@ -51,6 +52,7 @@ program: SBLOCK statements EBLOCK DELIM {
                                             fclose(target);
                                             translate();
                                             remove("temp.xsm");
+                                            eval($<root>2,variable);
                                             exit(0);
                                         }
        | SBLOCK EBLOCK DELIM            {
@@ -61,34 +63,34 @@ program: SBLOCK statements EBLOCK DELIM {
 statements: statements stmnt        {$$ = createSyntaxNode(T_CONN, none, (data){.value = 0}, $<root>1, $<root>2);}
           | stmnt                   {$$ = $<root>1;};
 
-stmnt: READ '(' VAR ')' DELIM                                           {$$ = createSyntaxNode(T_IO, S_READ, (data){.value = 0}, $<root>3, NULL);}
-     | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_IO, S_WRITE, (data){.value = 0}, $<root>3, NULL);}
+stmnt: READ '(' VAR ')' DELIM                                           {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL);}
+     | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_WRITE, none, (data){.value = 0}, $<root>3, NULL);}
      | VAR ASSIGN expr DELIM                                            {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3);}
      | IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM      {
-                                                                            node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, $<root>8); 
-                                                                            $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
+                                                                            node then = createSyntaxNode(T_THEN, none, (data){.value = 0}, $<root>6, $<root>8); 
+                                                                            $$ = createSyntaxNode(T_IF, none, (data){.value = 0}, $<root>3, then);
                                                                         }
      | IF '(' expr ')' THEN statements ENDIF DELIM                      {
-                                                                            node then = createSyntaxNode(T_CTRL, S_THEN, (data){.value = 0}, $<root>6, NULL); //Supply NULL instead of ELSE
-                                                                            $$ = createSyntaxNode(T_CTRL, S_IF, (data){.value = 0}, $<root>3, then);
+                                                                            node then = createSyntaxNode(T_THEN, none, (data){.value = 0}, $<root>6, NULL); //Supply NULL instead of ELSE
+                                                                            $$ = createSyntaxNode(T_IF, none, (data){.value = 0}, $<root>3, then);
                                                                         }
-     | WHILE '(' expr ')' DO statements ENDWHILE DELIM                  {$$ = createSyntaxNode(T_LOOP, S_WHILE, (data){.value = 0}, $<root>3, $<root>6);}
-     | BREAK DELIM                                                      {$$ = createSyntaxNode(T_JUMP, S_BREAK, (data){.value = 0}, NULL, NULL);}
-     | CONTINUE DELIM                                                   {$$ = createSyntaxNode(T_JUMP, S_CONT, (data){.value = 0}, NULL, NULL);};
-     | BRKP DELIM                                                       {$$ = createSyntaxNode(T_JUMP, S_BRKP, (data){.value = 0}, NULL, NULL);};
-     | DO statements WHILE '(' expr ')' DELIM                           {$$ = createSyntaxNode(T_LOOP, S_DWHILE, (data){.value = 0}, $<root>2, $<root>5);}               
-     | REPEAT statements UNTIL '(' expr ')' DELIM                       {$$ = createSyntaxNode(T_LOOP, S_REPEAT, (data){.value = 0}, $<root>2, $<root>5);};
+     | WHILE '(' expr ')' DO statements ENDWHILE DELIM                  {$$ = createSyntaxNode(T_WHILE, none, (data){.value = 0}, $<root>3, $<root>6);}
+     | BREAK DELIM                                                      {$$ = createSyntaxNode(T_BREAK, none, (data){.value = 0}, NULL, NULL);}
+     | CONTINUE DELIM                                                   {$$ = createSyntaxNode(T_CONT, none, (data){.value = 0}, NULL, NULL);};
+     | BRKP DELIM                                                       {$$ = createSyntaxNode(T_BRKP, none, (data){.value = 0}, NULL, NULL);};
+     | DO statements WHILE '(' expr ')' DELIM                           {$$ = createSyntaxNode(T_DWHILE, none, (data){.value = 0}, $<root>2, $<root>5);}               
+     | REPEAT statements UNTIL '(' expr ')' DELIM                       {$$ = createSyntaxNode(T_REPEAT, none, (data){.value = 0}, $<root>2, $<root>5);};
 
-expr: expr ADD expr                 {$$ = createSyntaxNode(T_ARITH, S_ADD, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr SUB expr                 {$$ = createSyntaxNode(T_ARITH, S_SUB, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr MUL expr                 {$$ = createSyntaxNode(T_ARITH, S_MUL, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr DIV expr                 {$$ = createSyntaxNode(T_ARITH, S_DIV, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr LT expr                  {$$ = createSyntaxNode(T_REL, S_LT, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr GT expr                  {$$ = createSyntaxNode(T_REL, S_GT, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr LE expr                  {$$ = createSyntaxNode(T_REL, S_LE, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr GE expr                  {$$ = createSyntaxNode(T_REL, S_GE, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr EQ expr                  {$$ = createSyntaxNode(T_REL, S_EQ, (data){.value = 0}, $<root>1, $<root>3);}
-    | expr NE expr                  {$$ = createSyntaxNode(T_REL, S_NE, (data){.value = 0}, $<root>1, $<root>3);}
+expr: expr ADD expr                 {$$ = createSyntaxNode(T_ADD, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr SUB expr                 {$$ = createSyntaxNode(T_SUB, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr MUL expr                 {$$ = createSyntaxNode(T_MUL, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr DIV expr                 {$$ = createSyntaxNode(T_DIV, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr LT expr                  {$$ = createSyntaxNode(T_LT, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr GT expr                  {$$ = createSyntaxNode(T_GT, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr LE expr                  {$$ = createSyntaxNode(T_LE, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr GE expr                  {$$ = createSyntaxNode(T_GE, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr EQ expr                  {$$ = createSyntaxNode(T_EQ, none, (data){.value = 0}, $<root>1, $<root>3);}
+    | expr NE expr                  {$$ = createSyntaxNode(T_NE, none, (data){.value = 0}, $<root>1, $<root>3);}
     | '(' expr ')'                  {$$ = $<root>2;}
     | NUMBER                        {$$ = $<root>1;}
     | VAR                           {$$ = $<root>1;};

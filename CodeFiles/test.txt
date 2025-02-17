@@ -1,9 +1,7 @@
 begin
     a = 5;
-    if(a == 5) then
-        write(1);
-    else
-        write(2);
-    
-    endif;
+    repeat
+        write(a);
+        a = a-1;
+    until(a == 0);
 end;

@@ -58,25 +58,25 @@ reg_index codeGen(node root, FILE* target){
                         return R;
                         break;
          
-        case T_IO :     lreg = codeGen(root -> left, target);
+        
+        
+        case T_READ :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        switch(root -> subtype) {
-                            case S_READ :   fprintf(target, "MOV R%d, %d\n", lreg, getAddress(root -> left -> content.varname));
-                                            read(lreg,target);
-                                            freeReg();
-                                            return -1;
-                                            break;
-                            
-                            case S_WRITE :  write(lreg,target);
-                                            freeReg();
-                                            return -1;
-                                            break;
-                            
-                            default :       printf("Invalid I/O method\n");
-                                            exit(1);
-                                            break;
-                        }
+                        fprintf(target, "MOV R%d, %d\n", lreg, getAddress(root -> left -> content.varname));
+                        read(lreg,target);
+                        freeReg();
+                        return -1;
                         break;
+        
+        case T_WRITE :  lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        write(lreg,target);
+                        freeReg();
+                        return -1;
+                        break;
+                            
+                            
+                        
         
         case T_CONN :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
@@ -86,179 +86,166 @@ reg_index codeGen(node root, FILE* target){
                         return -1;
                         break;
         
-        case T_ARITH :  lreg = codeGen(root -> left, target);
+                        
+   
+        case T_ADD :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        switch(root -> subtype) // Checking which operator
-                        {
-                            case S_ADD :   fprintf(target, "ADD R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            case S_SUB :   fprintf(target, "SUB R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-
-                            case S_MUL :   fprintf(target, "MUL R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-
-                            case S_DIV :   fprintf(target, "DIV R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            default :       printf("Error : Invalid Arithmetic Node\n");
-                                            exit(1);   
-
-                        }
+                        fprintf(target, "ADD R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
                         break;
         
-        case T_REL :    lreg = codeGen(root -> left, target);
+        case T_SUB :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        switch(root -> subtype) {
-                            case S_LE :     fprintf(target, "LE R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            case S_GE :     fprintf(target, "GE R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            case S_LT :     fprintf(target, "LT R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            case S_GT :     fprintf(target, "GT R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
-                            
-                            case S_NE :     fprintf(target, "NE R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
+                        fprintf(target, "SUB R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
 
-                            case S_EQ :     fprintf(target, "EQ R%d, R%d\n", lreg, rreg);
-                                            freeReg();
-                                            return lreg;
-                                            break;
+        case T_MUL :    lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "MUL R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
 
-                            default :       fprintf(stderr, "Unknown Relational Node in AST\n");
-                                            exit(1);
-                                            break;
-                        }
+        case T_DIV :    lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "DIV R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+        
+        
+                        
+   
+        case T_LE :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "LE R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+        
+        case T_GE :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "GE R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+        
+        case T_LT :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "LT R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+        
+        case T_GT :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "GT R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+        
+        case T_NE :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "NE R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
+                        break;
+
+        case T_EQ :     lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "EQ R%d, R%d\n", lreg, rreg);
+                        freeReg();
+                        return lreg;
                         break;
         
         case T_ASSG :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
                         fprintf(target, "MOV [%d], R%d\n", getAddress(root -> left -> content.varname), rreg);
                         freeReg();
-                        return lreg;
+                        freeReg();
+                        return -1;
                         break;
         
-        case T_CTRL :   switch(root -> subtype){
-                            case S_THEN :   return -1;
-                                            break;
-
-                            case S_IF :     lreg = codeGen(root -> left, target);
-                                            Slabel = getLabel();
-                                            fprintf(target, "JZ R%d, L%d\n", lreg, Slabel);
-                                            freeReg();
-                                            codeGen(root -> right -> left, target);
-                                            
-                                            if (root -> right -> right) {
-                                                Elabel = getLabel();
-                                                fprintf(target, "JMP L%d\n", Elabel);
-                                                fprintf(target, "L%d:\n", Slabel);
-                                                codeGen(root -> right -> right, target);
-                                                fprintf(target, "L%d:\n", Elabel);
-                                            }
-                                            else {
-                                                fprintf(target, "L%d:\n", Slabel);
-                                            }
-                                            return -1;
-                                            break;
-                                default :   fprintf(stderr, "Error: Unknown Control Node in AST\n");
-                                            exit(1);
-                                            break;                                            
-                        }   
+        case T_THEN :   return -1;
                         break;
-        
-        case T_LOOP :   switch(root -> subtype) {
-                            case S_WHILE :  Slabel = getLabel();
-                                            Elabel = getLabel();
-                                            LSPush(Slabel,Elabel);
-                                            fprintf(target, "L%d:\n", Slabel);
-                                            lreg = codeGen(root -> left, target);
-                                            fprintf(target, "JZ R%d, L%d\n", lreg, Elabel);
-                                            codeGen(root -> right, target);
-                                            fprintf(target, "JMP L%d\n", Slabel);
-                                            fprintf(target, "L%d:\n", Elabel);
-                                            freeReg();
-                                            LSPop();
-                                            return -1;
-                                            break;
 
-                            case S_DWHILE : Slabel = getLabel();
-                                            Elabel = getLabel();
-                                            LSPush(Slabel,Elabel);
-                                            fprintf(target, "L%d:\n", Slabel);
-                                            codeGen(root -> left, target);
-                                            rreg = codeGen(root -> right, target);
-                                            fprintf(target, "JNZ R%d L%d\n", rreg, Slabel);
-                                            fprintf(target, "L%d:\n", Elabel);
-                                            freeReg();
-                                            LSPop();
-                                            return -1;
-                                            break;
-                            
-                            case S_REPEAT : Slabel = getLabel();
-                                            Elabel = getLabel();
-                                            LSPush(Slabel, Elabel);
-                                            fprintf(target, "L%d:\n", Slabel);
-                                            codeGen(root -> left, target);
-                                            rreg = codeGen(root -> right, target);
-                                            fprintf(target, "JZ R%d L%d\n", rreg, Slabel);
-                                            fprintf(target, "L%d:\n", Elabel);
-                                            freeReg();
-                                            LSPop();
-                                            return -1;
-                                            break;
-                            
-                            default :       fprintf(stderr, "Unknown Loop Construct\n");
-                                            exit(1);
-                                            break;
-
-
+        case T_IF :     lreg = codeGen(root -> left, target);
+                        Slabel = getLabel();
+                        fprintf(target, "JZ R%d, L%d\n", lreg, Slabel);
+                        freeReg();
+                        codeGen(root -> right -> left, target);
+                        
+                        if (root -> right -> right) {
+                            Elabel = getLabel();
+                            fprintf(target, "JMP L%d\n", Elabel);
+                            fprintf(target, "L%d:\n", Slabel);
+                            codeGen(root -> right -> right, target);
+                            fprintf(target, "L%d:\n", Elabel);
                         }
+                        else {
+                            fprintf(target, "L%d:\n", Slabel);
+                        }
+                        return -1;
+                        break;
+          
+        
+        case T_WHILE :  Slabel = getLabel();
+                        Elabel = getLabel();
+                        LSPush(Slabel,Elabel);
+                        fprintf(target, "L%d:\n", Slabel);
+                        lreg = codeGen(root -> left, target);
+                        fprintf(target, "JZ R%d, L%d\n", lreg, Elabel);
+                        codeGen(root -> right, target);
+                        fprintf(target, "JMP L%d\n", Slabel);
+                        fprintf(target, "L%d:\n", Elabel);
+                        freeReg();
+                        LSPop();
+                        return -1;
+                        break;
+
+        case T_DWHILE : Slabel = getLabel();
+                        Elabel = getLabel();
+                        LSPush(Slabel,Elabel);
+                        fprintf(target, "L%d:\n", Slabel);
+                        codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "JNZ R%d, L%d\n", rreg, Slabel);
+                        fprintf(target, "L%d:\n", Elabel);
+                        freeReg();
+                        LSPop();
+                        return -1;
                         break;
         
-        case T_JUMP :   switch(root -> subtype) {
-                            case S_BREAK : Elabel = getLSEnd();
-                                           fprintf(target, "JMP L%d\n", Elabel);
-                                           return -1;
-                                           break;
-                            
-                            case S_CONT :  Slabel = getLSStart();
-                                           fprintf(target, "JMP L%d\n", Slabel);
-                                           return -1;
-                                           break;
+        case T_REPEAT : Slabel = getLabel();
+                        Elabel = getLabel();
+                        LSPush(Slabel, Elabel);
+                        fprintf(target, "L%d:\n", Slabel);
+                        codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        fprintf(target, "JZ R%d, L%d\n", rreg, Slabel);
+                        fprintf(target, "L%d:\n", Elabel);
+                        freeReg();
+                        LSPop();
+                        return -1;
+                        break;
+        
+        
+        
+        case T_BREAK :  Elabel = getLSEnd();
+                        fprintf(target, "JMP L%d\n", Elabel);
+                        return -1;
+                        break;
+        
+        case T_CONT :   Slabel = getLSStart();
+                        fprintf(target, "JMP L%d\n", Slabel);
+                        return -1;
+                        break;
 
-                            case S_BRKP :  fprintf(target, "BRKP\n");
-                                           return -1; 
-                                           break;
-
-                            default :      fprintf(stderr, "Unknown jump construct\n");
-                                           exit(1);
-                                           break;                   
-
-                        }
+        case T_BRKP :  fprintf(target, "BRKP\n");
+                        return -1; 
                         break;
 
         default :       printf("Error : Invalid Syntax Node type\n");
@@ -329,6 +316,7 @@ void initxsm(FILE* target){
     fprintf(target, "%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",0,2056,0,0,0,0,0,0);
     fprintf(target, "MOV SP, %d\n",SP); // leaving space for 26 variables
     fprintf(target, "MOV BP, %d\n", BP);
+    fprintf(target,"BRKP\n");
 }
 
 void endxsm(FILE * target) {
@@ -378,3 +366,4 @@ int getLSEnd() {
     fprintf(stderr, "Jump Construct used outside a loop\n");
     exit(1);
 }
+
