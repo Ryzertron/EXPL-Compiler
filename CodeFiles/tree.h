@@ -14,16 +14,18 @@ last commit is briefed below
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "SymTable.h"
 
 union data{         // union is used to hold data for different type of nodes
     char * varname; // varnames for var nodes
-    int value;      // value for constants
+    int value;
+    char * string;     // value for constants
 } typedef data;
 
 enum tnodeType{     // denotes the class of syntax node. Usage is specified below. (No value means content.value = 0)(No subtype means subtype = none)
         T_CONN,     // Connector with two children. No value or subtype.
         T_ASSG,     // Assginment statement with two children. No subtype or values.
-        T_VAR,      // Identifier nodes with zero children. Subtype shows type of variable and content.varname holds pointer to name
+        T_ID,      // Identifier nodes with zero children. Subtype shows type of variable and content.varname holds pointer to name
         T_CONST,    // Nodes that contains immediate values. content.value holds the value. No children
         T_READ,     // Read statements with a single child (left).
         T_WRITE,    // Write statements with a single child (left).
@@ -47,22 +49,23 @@ enum tnodeType{     // denotes the class of syntax node. Usage is specified belo
         T_DWHILE    // Do...while loop with statement on left and expr on the right. 
 }typedef tnodeType;
 
-enum dType{       // Subtypes identify different types of nodes in a node class 
-        none,     // placeholder while using other node types
-        D_INT,    // INT identifier type  
-        D_CHAR    // Char identifier type
+enum dType{         // Subtypes identify different types of nodes in a node class 
+        none,       // placeholder while using other node types
+        D_INT,      // INT identifier type  
+        D_STR       // str identifier type
 }typedef dType;
 
 struct tnode {      // Syntax Node Structure
     tnodeType type;
     dType dtype;
     data content;
+    GST* GSTEntry;
     struct tnode* left;
     struct tnode* right;
 }typedef tnode;
 typedef tnode* node;
 
-node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right);
+node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right, GST* Entry);
 void compatible(node type);
 
 int eval(node root, int* variable);

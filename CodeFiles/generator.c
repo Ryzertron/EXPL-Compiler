@@ -44,25 +44,62 @@ reg_index codeGen(node root, FILE* target){
     int Slabel;
     int Elabel;
     switch(root -> type){
-        case T_VAR :    lreg = codeGen(root -> left, target);
+        case T_ID :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        R = getReg();
-                        fprintf(target, "MOV R%d, [%d]\n", R, getAddress(root -> content.varname));
-                        return R;
+
+                        if(root -> GSTEntry == NULL) {
+                            fprintf(stderr,"%s is not declared\n", root -> content.varname);
+                            exit(1);
+                        }
+
+                        if (lreg == -1 && rreg == -1) {
+                            R = getReg();
+                            fprintf(target, "MOV R%d, %d\n", R, root -> GSTEntry -> binding);
+                            return R;
+                        }
+                        else if (rreg == -1) {
+                            if (root -> left -> type == T_ID) {
+                                fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                            }
+
+                            fprintf(target, "ADD R%d, %d\n",lreg, root -> GSTEntry -> binding);
+                            return lreg;
+                        }
+                        else {
+                            if(root -> left -> type == T_ID) {
+                                fprintf("MOV R%d, [R%d]\n", lreg, lreg);
+                            }
+                            fprintf(target, "MUL R%d, %d\n", lreg, root -> GSTEntry -> cols);
+
+                            if (root -> right -> type == T_ID) {
+                                fprintf("MOV R%d, [R%d]\n", rreg, rreg);
+                            }
+                            fprintf(target,"ADD R%d, R%d\n", lreg, rreg);
+                            freeReg();
+                            fprintf(target, "ADD R%d, %d\n", lreg, root -> GSTEntry -> binding);
+
+                        }
                         break;
 
         case T_CONST :  lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        R = getReg();
-                        fprintf(target, "MOV R%d, %d\n", R, root -> content.value);
-                        return R;
+                        switch(root -> dtype) {
+                            case D_INT :    R = getReg();
+                                            fprintf(target, "MOV R%d, %d\n", R, root -> content.value);
+                                            return R;
+                                            break;
+
+                            case D_STR :    R = getReg();
+                                            fprintf(target, "MOV R%d, \"%s\"\n", R, root -> content.string);
+                                            return R;
+                                            break;
+                        }
                         break;
          
         
         
         case T_READ :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        fprintf(target, "MOV R%d, %d\n", lreg, getAddress(root -> left -> content.varname));
                         read(lreg,target);
                         freeReg();
                         return -1;
@@ -70,6 +107,9 @@ reg_index codeGen(node root, FILE* target){
         
         case T_WRITE :  lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n",lreg, lreg);
+                        }
                         write(lreg,target);
                         freeReg();
                         return -1;
@@ -80,7 +120,6 @@ reg_index codeGen(node root, FILE* target){
         
         case T_CONN :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        int l2;
                         if (lreg != -1) freeReg();
                         if (rreg != -1) freeReg();
                         return -1;
@@ -90,6 +129,12 @@ reg_index codeGen(node root, FILE* target){
    
         case T_ADD :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "ADD R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -97,6 +142,12 @@ reg_index codeGen(node root, FILE* target){
         
         case T_SUB :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "SUB R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -104,6 +155,12 @@ reg_index codeGen(node root, FILE* target){
 
         case T_MUL :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "MUL R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -111,6 +168,12 @@ reg_index codeGen(node root, FILE* target){
 
         case T_DIV :    lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "DIV R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -121,6 +184,12 @@ reg_index codeGen(node root, FILE* target){
    
         case T_LE :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "LE R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -128,6 +197,12 @@ reg_index codeGen(node root, FILE* target){
         
         case T_GE :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "GE R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -135,6 +210,12 @@ reg_index codeGen(node root, FILE* target){
         
         case T_LT :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "LT R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -142,6 +223,12 @@ reg_index codeGen(node root, FILE* target){
         
         case T_GT :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "GT R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -149,6 +236,12 @@ reg_index codeGen(node root, FILE* target){
         
         case T_NE :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "NE R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -156,6 +249,12 @@ reg_index codeGen(node root, FILE* target){
 
         case T_EQ :     lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
                         fprintf(target, "EQ R%d, R%d\n", lreg, rreg);
                         freeReg();
                         return lreg;
@@ -163,7 +262,10 @@ reg_index codeGen(node root, FILE* target){
         
         case T_ASSG :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
-                        fprintf(target, "MOV [%d], R%d\n", getAddress(root -> left -> content.varname), rreg);
+                        if(root -> right -> type == T_ID) {
+                            fprintf(target, "MOV R%d, R%d\n",rreg, rreg);
+                        }
+                        fprintf(target, "MOV [R%d], R%d\n", lreg, rreg);
                         freeReg();
                         freeReg();
                         return -1;
@@ -308,9 +410,9 @@ void read(reg_index reg, FILE * target){ // Macro that generates code to read in
     }
 }
 
-int getAddress(char* varname){
-    return STACKBASE + *varname - 'a';   // varname - 'a' gives the number of the letter in the alphabhet.
-}
+// int getAddress(char* varname){
+//     return STACKBASE + *varname - 'a';   // varname - 'a' gives the number of the letter in the alphabhet.
+// }
 
 void initxsm(FILE* target){
     fprintf(target, "%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",0,2056,0,0,0,0,0,0);

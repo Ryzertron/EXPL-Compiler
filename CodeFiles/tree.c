@@ -14,7 +14,7 @@ refactoring will be reimplemented. Changes since last commit is briefed below.
 #include <stdlib.h>
 #include "tree.h"
 
-node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node right){
+node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node right, GST* Entry){
     
     node temp = (node)malloc(sizeof(tnode));
     temp -> type = type;
@@ -22,7 +22,8 @@ node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node
     temp -> content = content;
     temp -> right = right;
     temp -> left = left;
-    compatible(temp);
+    temp -> GSTEntry = Entry;
+    //compatible(temp);
     return temp;
 }
 
@@ -39,7 +40,7 @@ void compatible(node temp) {
         }
     }
     else if (temp -> type == T_ASSG) {
-        if((temp -> left -> type == T_VAR) && (temp -> left -> dtype == temp -> right -> dtype)){
+        if((temp -> left -> type == T_ID) && (temp -> left -> dtype == temp -> right -> dtype)){
             temp -> dtype = none;
             return;
         }
@@ -50,202 +51,202 @@ void compatible(node temp) {
     }
 }
 
-int Bflag = 0, Cflag = 0;
-int eval(node root, int* variable){
-    if(!root) return -1;
-    switch(root -> type) {
-        case T_VAR: {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            int index = *(root -> content.varname) - 'a';
-            return variable[index];
-            break;
-        }
+// int Bflag = 0, Cflag = 0;
+// int eval(node root, int* variable){
+//     if(!root) return -1;
+//     switch(root -> type) {
+//         case T_ID: {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             int index = *(root -> content.varname) - 'a';
+//             return variable[index];
+//             break;
+//         }
 
-        case T_CONST : {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return root -> content.value;
-            break;
-        }
+//         case T_CONST : {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return root -> content.value;
+//             break;
+//         }
 
-        case T_ADD:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg + rreg;
-            break;
-        }
-        case T_SUB: {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg - rreg;
-            break;
-        }
-        case T_MUL:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg * rreg;
-            break;
-        }
-        case T_DIV:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg/ rreg;
-            break;
-        }
-        case T_ASSG:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            variable[*(root -> left ->content.varname)-'a'] = rreg;
-            return -1;
-            break;
-        }
+//         case T_ADD:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg + rreg;
+//             break;
+//         }
+//         case T_SUB: {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg - rreg;
+//             break;
+//         }
+//         case T_MUL:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg * rreg;
+//             break;
+//         }
+//         case T_DIV:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg/ rreg;
+//             break;
+//         }
+//         case T_ASSG:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             variable[*(root -> left ->content.varname)-'a'] = rreg;
+//             return -1;
+//             break;
+//         }
 
-        case T_LT:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg < rreg;
-            break;
-        }
-        case T_GT:{
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg > rreg;
-            break;
-        }
-        case T_LE: {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg <= rreg;
-            break;
-        }
-        case T_GE : {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg >= rreg;
-            break;
-        }
-        case T_EQ : {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg == rreg;
-            break;
-        }
-        case T_NE: {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            return lreg != rreg;
-            break;
-        }
-        case T_READ: {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            int index = *(root -> left -> content.varname) - 'a';
-            scanf("%d",&variable[index]);
-            return -1;
-            break;
-        }
-        case T_WRITE : {
-            int lreg = eval(root -> left, variable);
-            int rreg = eval(root -> right, variable);
-            printf("%d",lreg);
-            return -1;
-            break;
-        }
-        case T_WHILE:{
-            int lreg = eval(root -> left, variable);
-            int rreg;
-            while(lreg){
-                rreg = eval(root -> right, variable);
-                if (Bflag == 1){
-                    Bflag = 0;
-                    break;
-                }
+//         case T_LT:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg < rreg;
+//             break;
+//         }
+//         case T_GT:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg > rreg;
+//             break;
+//         }
+//         case T_LE: {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg <= rreg;
+//             break;
+//         }
+//         case T_GE : {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg >= rreg;
+//             break;
+//         }
+//         case T_EQ : {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg == rreg;
+//             break;
+//         }
+//         case T_NE: {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             return lreg != rreg;
+//             break;
+//         }
+//         case T_READ: {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             int index = *(root -> left -> content.varname) - 'a';
+//             scanf("%d",&variable[index]);
+//             return -1;
+//             break;
+//         }
+//         case T_WRITE : {
+//             int lreg = eval(root -> left, variable);
+//             int rreg = eval(root -> right, variable);
+//             printf("%d",lreg);
+//             return -1;
+//             break;
+//         }
+//         case T_WHILE:{
+//             int lreg = eval(root -> left, variable);
+//             int rreg;
+//             while(lreg){
+//                 rreg = eval(root -> right, variable);
+//                 if (Bflag == 1){
+//                     Bflag = 0;
+//                     break;
+//                 }
                 
-                lreg = eval(root -> left, variable);
-                if (Cflag == 1){
-                    Cflag = 0;
-                    continue;
-                }
-            }
-            return -1;
-            break;
-        }
-        case T_DWHILE : {
-            int lreg,rreg;
-            do{
-                lreg = eval(root -> left, variable);
-                if (Bflag == 1){
-                    Bflag = 0;
-                    break;
-                }
+//                 lreg = eval(root -> left, variable);
+//                 if (Cflag == 1){
+//                     Cflag = 0;
+//                     continue;
+//                 }
+//             }
+//             return -1;
+//             break;
+//         }
+//         case T_DWHILE : {
+//             int lreg,rreg;
+//             do{
+//                 lreg = eval(root -> left, variable);
+//                 if (Bflag == 1){
+//                     Bflag = 0;
+//                     break;
+//                 }
                 
-                rreg = eval(root -> right, variable);
-                if (Cflag == 1){
-                    Cflag = 0;
-                    continue;
-                }
-            }while(rreg);
-            return -1;
-            break;
-        }
-        case T_REPEAT: {
-            int lreg, rreg;
-            do{
-                lreg = eval(root -> left, variable);
-                if (Bflag == 1){
-                    Bflag = 0;
-                    break;
-                }
-                rreg = eval(root -> right, variable);
-                if (Cflag == 1){
-                    Cflag = 0;
-                    continue;
-                }
+//                 rreg = eval(root -> right, variable);
+//                 if (Cflag == 1){
+//                     Cflag = 0;
+//                     continue;
+//                 }
+//             }while(rreg);
+//             return -1;
+//             break;
+//         }
+//         case T_REPEAT: {
+//             int lreg, rreg;
+//             do{
+//                 lreg = eval(root -> left, variable);
+//                 if (Bflag == 1){
+//                     Bflag = 0;
+//                     break;
+//                 }
+//                 rreg = eval(root -> right, variable);
+//                 if (Cflag == 1){
+//                     Cflag = 0;
+//                     continue;
+//                 }
 
-            }while(!rreg);
-            return -1;
-            break;
-        }
-        case T_BREAK : {
-            Bflag = 1;
-            return -1;
-            break;
-        }
-        case T_CONT : {
-            Cflag = 1;
-            return -1;
-            break;
-        }
+//             }while(!rreg);
+//             return -1;
+//             break;
+//         }
+//         case T_BREAK : {
+//             Bflag = 1;
+//             return -1;
+//             break;
+//         }
+//         case T_CONT : {
+//             Cflag = 1;
+//             return -1;
+//             break;
+//         }
 
-        case T_IF: {
-            int lreg = eval(root -> left, variable);
-            if (lreg){
-                eval(root -> right -> left, variable);
+//         case T_IF: {
+//             int lreg = eval(root -> left, variable);
+//             if (lreg){
+//                 eval(root -> right -> left, variable);
 
-            }else {
-                    eval(root -> right -> right, variable);
-            }
-            return -1;
+//             }else {
+//                     eval(root -> right -> right, variable);
+//             }
+//             return -1;
 
-            break;
-        }
-        case T_CONN :{
-            eval(root -> left, variable);
-            if (Bflag == 1){
-                return -1;
-            }
-            if (Cflag == 1){
-                return -1;
-            }
-            eval(root -> right, variable);
-            return -1;
-        }
-        default: {
-            return -1;
-            break;
-        }
+//             break;
+//         }
+//         case T_CONN :{
+//             eval(root -> left, variable);
+//             if (Bflag == 1){
+//                 return -1;
+//             }
+//             if (Cflag == 1){
+//                 return -1;
+//             }
+//             eval(root -> right, variable);
+//             return -1;
+//         }
+//         default: {
+//             return -1;
+//             break;
+//         }
 
-    }
-}
+//     }
+// }
 
