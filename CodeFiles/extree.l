@@ -12,19 +12,20 @@ Changes since previous commit is briefed below
 %{
     #include "y.tab.h"
     #include "tree.h"
+    #include "SymTable.h"
 %}
+identifier [a-zA-Z][a-zA-Z0-9]*
+strings \"((\\\")|[^"])*\"
+number [0-9]+
+
 
 %%
 
-[0-9]+      {
-                yylval.root = createSyntaxNode(T_CONST,D_INT,(data){.value = atoi(yytext)},NULL,NULL);
-                return NUMBER;
-            }
 
 [a-z]       {   
                 char * temp = (char*)malloc(sizeof(char));
                 strcpy(temp,yytext);
-                yylval.root = createSyntaxNode(T_VAR, D_INT,(data){.varname = temp},NULL,NULL);
+                yylval.root = createSyntaxNode(T_VAR, D_INT,(data){.varname = temp},NULL,NULL,NULL);
                 return VAR;
             }
 
@@ -63,8 +64,30 @@ Changes since previous commit is briefed below
 "end"       {return EBLOCK;}
 ";"         {return DELIM;}
 
+"decl"      {return DECL;}
+"enddecl"   {return ENDDECL;}
+"int"       {return TYPE_INT;}
+"str"       {return TYPE_STR;}
+","         {return SEP}
+
+{number}    {
+                yylval.root = createSyntaxNode(T_CONST,D_INT,(data){.value = atoi(yytext)},NULL,NULL,NULL);
+                return CONST;
+            }
+
+{identifier} {
+                GST* entry = GSTLookup(yytext);
+                char* dupname = strdup(yytext);
+                yylval.root = createSyntaxNode(T_ID,none,(data){.varname = dupname},NULL,NULL,entry);
+                return VAR;
+            }
+{strings} {
+            char* dupstring = strndup(yytext+1, strlen(yytext+1)-1);
+            yylval.root = createSyntaxNode(T_CONST, D_STR, (data){.string = dupstring},NULL,NULL,NULL);
+        }
+
 [ \t]       {}
-[()]        {return *yytext;}
+[()\[\]]        {return *yytext;}
 [\n]        {}
 
 %%
