@@ -55,17 +55,17 @@ enum dType{         // Subtypes identify different types of nodes in a node clas
         D_STR       // str identifier type
 }typedef dType;
 
-struct tnode {      // Syntax Node Structure
+typedef struct tnode {      // Syntax Node Structure
     tnodeType type;
     dType dtype;
     data content;
-    GST* GSTEntry;
+    struct GST* GSTEntry;
     struct tnode* left;
     struct tnode* right;
-}typedef tnode;
+}tnode;
 typedef tnode* node;
 
-node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right, GST* Entry);
+node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right, struct GST* Entry);
 void compatible(node type);
-
-int eval(node root, int* variable);
+node createTempVarNode(tnodeType type, dType dtype, data content, node left, node right);
+//int eval(node root, int* variable);

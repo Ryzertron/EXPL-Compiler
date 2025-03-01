@@ -1,20 +1,21 @@
 #pragma once
 #include "tree.h"
+struct tnode;
 
-struct GlobalSymbolTable {
+typedef struct GST {
     char* name;
     int dtype;
     int size;
     int binding;
     int rows;
     int cols;
-    struct GlobalSymbolTable* next;
-}typedef GST;
+    struct GST* next;
+}GST;
 
-GST* GST_HEAD = NULL;
+extern GST* GST_HEAD;
 
 GST* GSTLookup(char* name);
 int min(int a, int b);
 int max(int a, int b);
-void GSTInstall(tnode* root, dType type, int offset);
+void GSTInstall(struct tnode* root, int type, int offset);
 void printGST();

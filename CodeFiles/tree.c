@@ -14,7 +14,18 @@ refactoring will be reimplemented. Changes since last commit is briefed below.
 #include <stdlib.h>
 #include "tree.h"
 
-node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node right, GST* Entry){
+node createTempVarNode(tnodeType type, dType dtype, data content, node left, node right) {
+    node temp = (node)malloc(sizeof(tnode));
+    temp -> type = type;
+    temp -> dtype = dtype;
+    temp -> content = content;
+    temp -> right = right;
+    temp -> left = left;
+    temp -> GSTEntry = NULL;
+    return temp;
+}
+
+node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node right, struct GST* Entry){
     
     node temp = (node)malloc(sizeof(tnode));
     temp -> type = type;
@@ -23,30 +34,75 @@ node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node
     temp -> right = right;
     temp -> left = left;
     temp -> GSTEntry = Entry;
-    //compatible(temp);
+    compatible(temp);
     return temp;
 }
 
 void compatible(node temp) {
-
-    if (temp -> type >= 6 && temp -> type <= 15) {
-        if ((temp -> left -> dtype ==D_INT) && (temp -> left -> dtype == temp -> right -> dtype)) {
-            temp -> dtype = D_INT;
-            return;
+    if (temp -> type == T_ID) {
+        if (temp -> left ) {
+            if (temp -> left -> dtype != D_INT) {
+                fprintf(stderr, "Invlalid subscript type for %s\n", temp -> content.varname);
+                exit(1);
+            }
+            else if (temp -> left -> type == T_CONST && temp -> GSTEntry -> rows <= temp -> left -> content.value) {
+                fprintf(stderr, "Array index out of bounds for %s\n", temp -> content.varname);
+                exit(1);
+            }
         }
-        else {
+        if (temp -> right) {
+            if (temp -> right -> dtype != D_INT) {
+                fprintf(stderr, "Invlalid subscript type for %s\n", temp -> content.varname);
+                exit(1);
+            }
+            else if (temp -> right -> type == T_CONST && temp -> GSTEntry -> cols <= temp -> right -> content.value) {
+                fprintf(stderr, "Array index out of bounds for %s\n", temp -> content.varname);
+                exit(1);
+            }
+        }
+    }
+    if (temp -> type >= T_ADD && temp -> type <= T_NE) {
+        if (temp -> left -> type == T_ID) {
+            if(temp -> left -> dtype == none) {
+                fprintf(stderr, "Undeclared identifier %s\n",temp -> left -> content.varname);
+                exit(1);
+            }
+        }
+        else if (temp -> right -> type == T_ID && temp -> right -> dtype == none) {
+            fprintf(stderr,"Undeclared identifier %s\n",temp -> right -> content.varname);
+            exit(1);
+        }
+
+        else if ((temp -> left -> dtype != D_INT) || (temp -> right -> dtype != D_INT)) {
             fprintf(stderr, "Type mismatch between arithmetic\n");
             exit(1);
         }
-    }
-    else if (temp -> type == T_ASSG) {
-        if((temp -> left -> type == T_ID) && (temp -> left -> dtype == temp -> right -> dtype)){
-            temp -> dtype = none;
+        else {
+            temp -> dtype = D_INT;
             return;
         }
-        else {
-            fprintf(stderr, "Type mismatch between assignment\n");
+    }
+    else if (temp -> type == T_ASSG) {
+
+        if(temp -> left -> type != T_ID) {
+            fprintf(stderr, "expected an identifier on the left of assignment\n");
             exit(1);
+        }
+        else if(temp -> left -> dtype == none) {
+            fprintf(stderr, "Undeclared identifier %s\n",temp -> left -> content.varname);
+            exit(1);
+        }
+        else if(temp -> right -> dtype == none) {
+            fprintf(stderr, "Undeclared identifier %s\n",temp -> right -> content.varname);
+            exit(1);
+        }
+        else if(temp -> left -> dtype != temp -> right -> dtype){
+            fprintf(stderr, "Type mismatch when assigning to %s\n",temp -> left -> content.varname);
+            exit(1);
+        }
+        else {
+            temp -> dtype = temp -> left -> dtype;
+            return;
         }
     }
 }

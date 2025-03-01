@@ -14,7 +14,7 @@ for xsm simulator. Changes since the last commit is briefed below
 #include <stdlib.h>
 #include <string.h>
 #include "generator.h"
-
+int SP, BP;
 int LR = -1;    // Track Registers
 int LL = -1;    // Track Labels
 LSE* LTOP = NULL;
@@ -67,16 +67,17 @@ reg_index codeGen(node root, FILE* target){
                         }
                         else {
                             if(root -> left -> type == T_ID) {
-                                fprintf("MOV R%d, [R%d]\n", lreg, lreg);
+                                fprintf(target,"MOV R%d, [R%d]\n", lreg, lreg);
                             }
                             fprintf(target, "MUL R%d, %d\n", lreg, root -> GSTEntry -> cols);
 
                             if (root -> right -> type == T_ID) {
-                                fprintf("MOV R%d, [R%d]\n", rreg, rreg);
+                                fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
                             }
                             fprintf(target,"ADD R%d, R%d\n", lreg, rreg);
                             freeReg();
                             fprintf(target, "ADD R%d, %d\n", lreg, root -> GSTEntry -> binding);
+                            return lreg;
 
                         }
                         break;
@@ -262,8 +263,9 @@ reg_index codeGen(node root, FILE* target){
         
         case T_ASSG :   lreg = codeGen(root -> left, target);
                         rreg = codeGen(root -> right, target);
+                        
                         if(root -> right -> type == T_ID) {
-                            fprintf(target, "MOV R%d, R%d\n",rreg, rreg);
+                            fprintf(target, "MOV R%d, [R%d]\n",rreg, rreg);
                         }
                         fprintf(target, "MOV [R%d], R%d\n", lreg, rreg);
                         freeReg();

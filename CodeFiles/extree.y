@@ -15,6 +15,7 @@ Changes that was made since the previous commit will be briefed below.
 #include "tree.h"
 #include "generator.h"
 #include "label.h"
+#include "declaration.h"
 //int variable[26];
 void yyerror(char const * s);
 extern FILE* yyin;
@@ -25,31 +26,30 @@ tnode* SyntaxRoot;
 %union {
     struct tnode* root;
     char * string;
-    dType type;
-    Dnode* droot;
-
-
+    int type;
 }
 
 %start program
 %token DELIM SEP SBLOCK EBLOCK 
-%token <root> CONST
+%token <root> NUMBER
 %token READ WRITE
 %token ADD SUB MUL DIV ASSIGN 
-%token GT LT NE EQ LE GE
+%token GT LT NE EQ LE GE 
 %token IF THEN ELSE ENDIF
 %token WHILE DO ENDWHILE REPEAT UNTIL
 %token BREAK CONTINUE
 %token BRKP
 %token DECL ENDDECL
-%token TYPE_INT TYPE_STR
-%token VAR
+%token TYPE_INT TYPE_STR 
+%token ID
 %token STRING
 %type <root> program expr statements stmnt Vsin
+%type <type> dtype
+%left NE EQ
+%left GT LT GE LE
 %left ADD SUB
 %left MUL DIV
-%left GE LE NE
-%left GT LT EQ
+
 
 %%
 
@@ -59,45 +59,28 @@ decBlock: DECL declist ENDDECL
 declist: declist decl
         | decl;
 
-decl : type VList DELIM     {CreateGST($<dType>1);}
+decl : dtype VList DELIM     {CreateGST($<type>1);}
 
-type : TYPE_INT
-     | TYPE_STR;
+dtype : TYPE_INT         {$$ = 1;}
+     | TYPE_STR          {$$ = 2;};
 
-VList : VList SEP Vsin {pushDecl($<root>2);}
+VList : VList SEP Vsin {pushDecl($<root>3);}
       | Vsin           {pushDecl($<root>1);}
 
-Vsin : VAR                                      {$$ = $<root>1;}
-     | VAR '[' TYPE_INT ']'                     {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $$ = $<root>1;
-                                                }
-     | VAR '[' TYPE_INT ']' '[' TYPE_INT ']'    {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $<root>1 -> right = $<root>6;
-                                                    $$ = $<root>1;
-                                                }
-     | VAR '[' TYPE_INT ']' '[' VAR ']'         {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $<root>1 -> right = $<root>6;
-                                                    $$ = $<root>1;
-                                                }
-     | VAR '[' VAR ']' '[' VAR ']'              {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $<root>1 -> right = $<root>6;
-                                                    $$ = $<root>1;
-                                                }
-     | VAR '[' VAR ']' '[' TYPE_INT ']'         {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $<root>1 -> right = $<root>6;
-                                                    $$ = $<root>1;
-                                                }
-     | VAR '[' VAR ']'                          {
-                                                    $<root>1 -> left = $<root>3;
-                                                    $$ = $<root>1;
-                                                }
 
-program: SBLOCK statements EBLOCK DELIM { 
+Vsin : ID                                       {$$ = $<root>1;}
+     | ID '[' expr ']'                          {
+                                                    $<root>1 -> left = $<root>3;
+                                                    $$ = $<root>1;
+                                                }
+     | ID '[' expr ']' '[' expr ']'    {
+                                                    $<root>1 -> left = $<root>3;
+                                                    $<root>1 -> right = $<root>6;
+                                                    $$ = $<root>1;
+                                                }
+    
+
+program: SBLOCK decBlock statements EBLOCK DELIM { 
                                             SyntaxRoot = $<root>2;
                                             return 0;
 
@@ -110,9 +93,9 @@ program: SBLOCK statements EBLOCK DELIM {
 statements: statements stmnt            {$$ = createSyntaxNode(T_CONN, none, (data){.value = 0}, $<root>1, $<root>2,NULL);}
           | stmnt                       {$$ = $<root>1;};
 
-stmnt: READ '(' VAR ')' DELIM                                           {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL,NULL);}
+stmnt: READ '(' Vsin ')' DELIM                                           {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL,NULL);}
      | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_WRITE, none, (data){.value = 0}, $<root>3, NULL,NULL);}
-     | VAR ASSIGN expr DELIM                                            {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
+     | Vsin ASSIGN expr DELIM                                            {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
      | IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM      {
                                                                             node then = createSyntaxNode(T_THEN, none, (data){.value = 0}, $<root>6, $<root>8,NULL); 
                                                                             $$ = createSyntaxNode(T_IF, none, (data){.value = 0}, $<root>3, then,NULL);
@@ -127,7 +110,7 @@ stmnt: READ '(' VAR ')' DELIM                                           {$$ = cr
      | BRKP DELIM                                                       {$$ = createSyntaxNode(T_BRKP, none, (data){.value = 0}, NULL, NULL,NULL);}
      | DO statements WHILE '(' expr ')' DELIM                           {$$ = createSyntaxNode(T_DWHILE, none, (data){.value = 0}, $<root>2, $<root>5,NULL);}               
      | REPEAT statements UNTIL '(' expr ')' DELIM                       {$$ = createSyntaxNode(T_REPEAT, none, (data){.value = 0}, $<root>2, $<root>5,NULL);}
-     | decBlock;
+     ;
 
 expr: expr ADD expr         {$$ = createSyntaxNode(T_ADD, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr SUB expr         {$$ = createSyntaxNode(T_SUB, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
@@ -140,14 +123,14 @@ expr: expr ADD expr         {$$ = createSyntaxNode(T_ADD, none, (data){.value = 
     | expr EQ expr          {$$ = createSyntaxNode(T_EQ, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr NE expr          {$$ = createSyntaxNode(T_NE, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | '(' expr ')'          {$$ = $<root>2;}
-    | CONST                 {$$ = $<root>1;}
-    | VAR                   {$$ = $<root>1;}
+    | NUMBER                {$$ = $<root>1;}
+    | Vsin                  {$$ = $<root>1;}
     | STRING                {$<root>$ = $<root>1;};
-
 %%
 
 void yyerror(char const *s) {
     printf("yyerror : %s\n", s);
+    exit(1);
 }
 
 int main() {
@@ -155,6 +138,7 @@ int main() {
     BP = STACKBASE+1;
     yyin = fopen("test.txt","r");
     yyparse();
+    printGST();
     FILE* target = fopen("temp.xsm","w");
     initxsm(target);
     codeGen(SyntaxRoot,target);

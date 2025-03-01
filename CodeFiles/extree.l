@@ -15,20 +15,11 @@ Changes since previous commit is briefed below
     #include "SymTable.h"
 %}
 identifier [a-zA-Z][a-zA-Z0-9]*
-strings \"((\\\")|[^"])*\"
+strings ["][A-Za-z_!@#$%^&\(\)\\]+["]
 number [0-9]+
 
 
 %%
-
-
-[a-z]       {   
-                char * temp = (char*)malloc(sizeof(char));
-                strcpy(temp,yytext);
-                yylval.root = createSyntaxNode(T_VAR, D_INT,(data){.varname = temp},NULL,NULL,NULL);
-                return VAR;
-            }
-
 "+"         {return ADD;}
 "-"         {return SUB;}
 "*"         {return MUL;}
@@ -53,7 +44,7 @@ number [0-9]+
 "break"     {return BREAK;}
 "continue"  {return CONTINUE;}
 
-"repeat" {return REPEAT;}
+"repeat"    {return REPEAT;}
 "until"     {return UNTIL;}
 
 
@@ -68,22 +59,25 @@ number [0-9]+
 "enddecl"   {return ENDDECL;}
 "int"       {return TYPE_INT;}
 "str"       {return TYPE_STR;}
-","         {return SEP}
+","         {return SEP;}
 
 {number}    {
                 yylval.root = createSyntaxNode(T_CONST,D_INT,(data){.value = atoi(yytext)},NULL,NULL,NULL);
-                return CONST;
+                return NUMBER;
             }
 
 {identifier} {
                 GST* entry = GSTLookup(yytext);
                 char* dupname = strdup(yytext);
-                yylval.root = createSyntaxNode(T_ID,none,(data){.varname = dupname},NULL,NULL,entry);
-                return VAR;
+                
+                if(entry) yylval.root = createSyntaxNode(T_ID,entry -> dtype,(data){.varname = dupname},NULL,NULL,entry);
+                else yylval.root = createTempVarNode(T_ID,none,(data){.varname = dupname},NULL,NULL);
+                return ID;
             }
 {strings} {
             char* dupstring = strndup(yytext+1, strlen(yytext+1)-1);
             yylval.root = createSyntaxNode(T_CONST, D_STR, (data){.string = dupstring},NULL,NULL,NULL);
+            return STRING;
         }
 
 [ \t]       {}

@@ -1,6 +1,7 @@
 #include "SymTable.h"
 #include "generator.h"
 
+GST* GST_HEAD = NULL;
 GST* GSTLookup(char * name) {
     GST * temp = GST_HEAD;
     while(temp) {
@@ -11,7 +12,7 @@ GST* GSTLookup(char * name) {
     return NULL;
 }
 
-void GSTInstall(tnode* root, dType type, int offset) {
+void GSTInstall(struct tnode* root, int type, int offset) {
     GST* temp = GSTLookup(root -> content.varname);
     if(temp) {
        printf("Variable %s already declared\n", root -> content.varname);
@@ -46,10 +47,11 @@ int min(int a, int b) {
 
 void printGST() {
     GST* temp = GST_HEAD;
-    printf("GLOBAL_SYMBOL TABLE\n");
+    printf("----------------GLOBAL_SYMBOL_TABLE----------------\n\n");
     printf("Name\t\tType\tSize\tBind\tRows\tCols\n");
     while(temp) {
         printf("%s\t\t%d\t%d\t%d\t%d\t%d\n",temp -> name,temp -> dtype,temp -> size,temp -> binding, temp -> rows, temp -> cols);
         temp = temp -> next;
     }
+    printf("\n---------------------------------------------------\n");
 }

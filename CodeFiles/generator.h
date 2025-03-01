@@ -6,8 +6,8 @@
 #define reg_index int
 
 #define STACKBASE 4096
-int SP;
-int BP;
+extern int SP;
+extern int BP;
 
 struct loopStackElement {
     int start; // Start Label
