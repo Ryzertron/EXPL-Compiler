@@ -27,6 +27,7 @@ tnode* SyntaxRoot;
     struct tnode* root;
     char * string;
     int type;
+    int value;
 }
 
 %start program
@@ -81,7 +82,7 @@ Vsin : ID                                       {$$ = $<root>1;}
     
 
 program: SBLOCK decBlock statements EBLOCK DELIM { 
-                                            SyntaxRoot = $<root>2;
+                                            SyntaxRoot = $<root>3;
                                             return 0;
 
                                         }
@@ -93,9 +94,9 @@ program: SBLOCK decBlock statements EBLOCK DELIM {
 statements: statements stmnt            {$$ = createSyntaxNode(T_CONN, none, (data){.value = 0}, $<root>1, $<root>2,NULL);}
           | stmnt                       {$$ = $<root>1;};
 
-stmnt: READ '(' Vsin ')' DELIM                                           {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL,NULL);}
+stmnt: READ '(' Vsin ')' DELIM                                          {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL,NULL);}
      | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_WRITE, none, (data){.value = 0}, $<root>3, NULL,NULL);}
-     | Vsin ASSIGN expr DELIM                                            {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
+     | Vsin ASSIGN expr DELIM                                           {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
      | IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM      {
                                                                             node then = createSyntaxNode(T_THEN, none, (data){.value = 0}, $<root>6, $<root>8,NULL); 
                                                                             $$ = createSyntaxNode(T_IF, none, (data){.value = 0}, $<root>3, then,NULL);
@@ -123,9 +124,9 @@ expr: expr ADD expr         {$$ = createSyntaxNode(T_ADD, none, (data){.value = 
     | expr EQ expr          {$$ = createSyntaxNode(T_EQ, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr NE expr          {$$ = createSyntaxNode(T_NE, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | '(' expr ')'          {$$ = $<root>2;}
-    | NUMBER                {$$ = $<root>1;}
-    | Vsin                  {$$ = $<root>1;}
-    | STRING                {$<root>$ = $<root>1;};
+    | NUMBER                {$$ = createSyntaxNode(T_CONST,D_INT,(data){.value = $<value>1},NULL,NULL,NULL);}
+    | STRING                {$$ = $<root>1;}
+    | Vsin                  {$$ = $<root>1;};
 %%
 
 void yyerror(char const *s) {
@@ -138,7 +139,6 @@ int main() {
     BP = STACKBASE+1;
     yyin = fopen("test.txt","r");
     yyparse();
-    printGST();
     FILE* target = fopen("temp.xsm","w");
     initxsm(target);
     codeGen(SyntaxRoot,target);

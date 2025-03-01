@@ -52,7 +52,9 @@ enum tnodeType{     // denotes the class of syntax node. Usage is specified belo
 enum dType{         // Subtypes identify different types of nodes in a node class 
         none,       // placeholder while using other node types
         D_INT,      // INT identifier type  
-        D_STR       // str identifier type
+        D_STR,      // str identifier type
+        D_IPTR,     // INT pointer type
+        D_SPTR,     // STR pointer type
 }typedef dType;
 
 typedef struct tnode {      // Syntax Node Structure

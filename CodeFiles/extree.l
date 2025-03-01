@@ -62,7 +62,7 @@ number [0-9]+
 ","         {return SEP;}
 
 {number}    {
-                yylval.root = createSyntaxNode(T_CONST,D_INT,(data){.value = atoi(yytext)},NULL,NULL,NULL);
+                yylval.value = atoi(yytext);
                 return NUMBER;
             }
 

@@ -3,5 +3,5 @@ decl
    int num[10],b;
    str we;
 enddecl
- num = b;
+ num[10] = b;
 end;

@@ -40,6 +40,10 @@ node createSyntaxNode(tnodeType type, dType dtype, data content, node left, node
 
 void compatible(node temp) {
     if (temp -> type == T_ID) {
+        if (!temp -> GSTEntry) {
+            fprintf(stderr, "Undeclared identifier %s\n", temp -> content.varname);
+            exit(1);
+        }
         if (temp -> left ) {
             if (temp -> left -> dtype != D_INT) {
                 fprintf(stderr, "Invlalid subscript type for %s\n", temp -> content.varname);
@@ -61,18 +65,13 @@ void compatible(node temp) {
             }
         }
     }
-    if (temp -> type >= T_ADD && temp -> type <= T_NE) {
+    else if (temp -> type >= T_ADD && temp -> type <= T_NE) {
         if (temp -> left -> type == T_ID) {
-            if(temp -> left -> dtype == none) {
-                fprintf(stderr, "Undeclared identifier %s\n",temp -> left -> content.varname);
-                exit(1);
-            }
+            compatible(temp -> left);
         }
-        else if (temp -> right -> type == T_ID && temp -> right -> dtype == none) {
-            fprintf(stderr,"Undeclared identifier %s\n",temp -> right -> content.varname);
-            exit(1);
+        else if (temp -> right -> type == T_ID) {
+            compatible(temp -> right);
         }
-
         else if ((temp -> left -> dtype != D_INT) || (temp -> right -> dtype != D_INT)) {
             fprintf(stderr, "Type mismatch between arithmetic\n");
             exit(1);
@@ -88,22 +87,16 @@ void compatible(node temp) {
             fprintf(stderr, "expected an identifier on the left of assignment\n");
             exit(1);
         }
-        else if(temp -> left -> dtype == none) {
-            fprintf(stderr, "Undeclared identifier %s\n",temp -> left -> content.varname);
-            exit(1);
-        }
-        else if(temp -> right -> dtype == none) {
-            fprintf(stderr, "Undeclared identifier %s\n",temp -> right -> content.varname);
-            exit(1);
-        }
         else if(temp -> left -> dtype != temp -> right -> dtype){
             fprintf(stderr, "Type mismatch when assigning to %s\n",temp -> left -> content.varname);
             exit(1);
         }
-        else {
-            temp -> dtype = temp -> left -> dtype;
-            return;
+        if(temp -> right -> type == T_ID) {
+            compatible(temp -> right);
         }
+        compatible(temp -> left);
+        temp -> dtype = temp -> left -> dtype;
+        return;
     }
 }
 
