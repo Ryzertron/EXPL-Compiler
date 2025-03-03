@@ -348,9 +348,20 @@ reg_index codeGen(node root, FILE* target){
                         return -1;
                         break;
 
-        case T_BRKP :  fprintf(target, "BRKP\n");
+        case T_BRKP :   fprintf(target, "BRKP\n");
                         return -1; 
                         break;
+
+        case T_DEREF:   lreg = codeGen(root -> left, target);
+                        fprintf(target, "MOV R%d, [R%d]\n",lreg, lreg);
+                        fprintf(target, "MOV R%d, [R%d]\n",lreg, lreg);
+                        return lreg;
+                        break;
+        
+        case T_REF  :   R = getReg();
+                        fprintf(target, "MOV R%d, %d\n",R, root -> left -> GSTEntry -> binding);
+                        return R;
+                        
 
         default :       printf("Error : Invalid Syntax Node type\n");
                         exit(1);

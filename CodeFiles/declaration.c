@@ -41,9 +41,13 @@ int DSEmpty() {
 void CreateGST (dType type) {
     DNode* temp = popDecl();
     while(temp) {
-        temp -> data -> dtype = type;
+        printf("%s ---- %d--%d|",temp -> data -> content.varname,temp -> data -> dtype,type);
+        if(temp -> data -> dtype == 5) temp -> data -> dtype = type+1;
+        else temp -> data -> dtype = type;
+        printf("%s ---- %d--%d|",temp -> data -> content.varname,temp -> data -> dtype,type);
         GSTInstall(temp -> data, type, 0);
         free(temp);
         temp = popDecl();
     }
+    printGST();
 }

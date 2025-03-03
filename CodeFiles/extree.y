@@ -41,15 +41,18 @@ tnode* SyntaxRoot;
 %token BREAK CONTINUE
 %token BRKP
 %token DECL ENDDECL
-%token TYPE_INT TYPE_STR 
+%token TYPE_INT TYPE_STR
 %token ID
 %token STRING
-%type <root> program expr statements stmnt Vsin
+%token REF
+%type <root> program expr statements stmnt Vsin VlistElement
 %type <type> dtype
 %left NE EQ
 %left GT LT GE LE
 %left ADD SUB
 %left MUL DIV
+%right DEREF
+%right REF
 
 
 %%
@@ -63,11 +66,17 @@ declist: declist decl
 decl : dtype VList DELIM     {CreateGST($<type>1);}
 
 dtype : TYPE_INT         {$$ = 1;}
-     | TYPE_STR          {$$ = 2;};
+      | TYPE_STR         {$$ = 3;};
 
-VList : VList SEP Vsin {pushDecl($<root>3);}
-      | Vsin           {pushDecl($<root>1);}
+VList : VList SEP VlistElement  {pushDecl($<root>3);}
+      | VlistElement            {pushDecl($<root>1);}
+      ;
 
+VlistElement : Vsin                  {$$ = $<root>1;} 
+             | MUL Vsin %prec DEREF  {
+                                        $<root>2 -> dtype = 5;
+                                        $$ = $<root>2;
+                                     };
 
 Vsin : ID                                       {$$ = $<root>1;}
      | ID '[' expr ']'                          {
@@ -78,7 +87,7 @@ Vsin : ID                                       {$$ = $<root>1;}
                                                     $<root>1 -> left = $<root>3;
                                                     $<root>1 -> right = $<root>6;
                                                     $$ = $<root>1;
-                                                }
+                                                };
     
 
 program: SBLOCK decBlock statements EBLOCK DELIM { 
@@ -126,7 +135,9 @@ expr: expr ADD expr         {$$ = createSyntaxNode(T_ADD, none, (data){.value = 
     | '(' expr ')'          {$$ = $<root>2;}
     | NUMBER                {$$ = createSyntaxNode(T_CONST,D_INT,(data){.value = $<value>1},NULL,NULL,NULL);}
     | STRING                {$$ = $<root>1;}
-    | Vsin                  {$$ = $<root>1;};
+    | Vsin                  {$$ = $<root>1;}
+    | MUL Vsin %prec DEREF  {$$ = createSyntaxNode(T_DEREF,($<root>2 -> dtype - 1),(data){.value = 0},$<root>2,NULL,NULL);}
+    | REF Vsin              {$$ = createSyntaxNode(T_REF,($<root>2 -> dtype + 1),(data){.value = 0},$<root>2,NULL,NULL);};
 %%
 
 void yyerror(char const *s) {

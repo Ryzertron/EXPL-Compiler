@@ -46,15 +46,18 @@ enum tnodeType{     // denotes the class of syntax node. Usage is specified belo
         T_CONT,     // Continue statement with no children.
         T_WHILE,    // While loop with expr on left and statements on the right.
         T_REPEAT,   // Repeat...until loop with statement on left and expr on right.
-        T_DWHILE    // Do...while loop with statement on left and expr on the right. 
+        T_DWHILE,   // Do...while loop with statement on left and expr on the right. 
+        T_DEREF,    // Dereference operator '*'
+        T_REF,      // Address-of operator '&'
 }typedef tnodeType;
 
 enum dType{         // Subtypes identify different types of nodes in a node class 
         none,       // placeholder while using other node types
-        D_INT,      // INT identifier type  
+        D_INT,      // INT identifier type
+        D_IPTR,     // INT pointer type  
         D_STR,      // str identifier type
-        D_IPTR,     // INT pointer type
         D_SPTR,     // STR pointer type
+        D_PTR,      // Generic pointer type
 }typedef dType;
 
 typedef struct tnode {      // Syntax Node Structure

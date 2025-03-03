@@ -22,10 +22,12 @@ void GSTInstall(struct tnode* root, int type, int offset) {
 
     temp -> name = strndup(root -> content.varname, strlen(root -> content.varname)- offset);
 
-    temp -> dtype = type;
+    temp -> dtype = root -> dtype;
 
     int rows = 0,cols = 0;
-    if (root -> left) rows = root -> left -> content.value;
+    if (root -> left) {
+        rows = root -> left -> content.value;
+    }
     if (root -> right) cols = root -> right -> content.value;
 
     temp -> rows = rows;

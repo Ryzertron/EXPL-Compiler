@@ -1,7 +1,8 @@
 begin
 decl
-   int num[10],b;
-   str we;
+   int a,*b;
 enddecl
- num[10] = b;
+a = 12;
+b = &a;
+write(*b);
 end;

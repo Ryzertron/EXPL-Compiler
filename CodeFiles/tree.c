@@ -69,10 +69,10 @@ void compatible(node temp) {
         if (temp -> left -> type == T_ID) {
             compatible(temp -> left);
         }
-        else if (temp -> right -> type == T_ID) {
+        if (temp -> right -> type == T_ID) {
             compatible(temp -> right);
         }
-        else if ((temp -> left -> dtype != D_INT) || (temp -> right -> dtype != D_INT)) {
+        if ((temp -> left -> dtype != D_INT) || (temp -> right -> dtype != D_INT)) {
             fprintf(stderr, "Type mismatch between arithmetic\n");
             exit(1);
         }
@@ -87,215 +87,32 @@ void compatible(node temp) {
             fprintf(stderr, "expected an identifier on the left of assignment\n");
             exit(1);
         }
-        else if(temp -> left -> dtype != temp -> right -> dtype){
-            fprintf(stderr, "Type mismatch when assigning to %s\n",temp -> left -> content.varname);
-            exit(1);
-        }
+        compatible(temp -> left);
         if(temp -> right -> type == T_ID) {
             compatible(temp -> right);
         }
-        compatible(temp -> left);
+        if(temp -> left -> dtype != temp -> right -> dtype){
+            fprintf(stderr, "Type mismatch when assigning to %s\n",temp -> left -> content.varname);
+            exit(1);
+        }
         temp -> dtype = temp -> left -> dtype;
         return;
     }
+    else if (temp -> type == T_DEREF) {
+        if (temp -> left -> dtype != D_PTR && temp -> left -> dtype != D_IPTR && temp -> left -> dtype != D_SPTR) {
+            fprintf(stderr, "Cannot dereference non-pointer type\n");
+            exit(1);
+        }
+        temp -> dtype = temp -> left -> dtype - 1;
+        return;
+    }
+    else if (temp -> type == T_REF) {
+        if (temp -> left -> type != T_ID) {
+            fprintf(stderr, "Invalid use of referencing\n");
+            exit(1);
+        }
+        temp -> dtype = temp -> left -> dtype + 1;
+        return;
+    }
 }
-
-// int Bflag = 0, Cflag = 0;
-// int eval(node root, int* variable){
-//     if(!root) return -1;
-//     switch(root -> type) {
-//         case T_ID: {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             int index = *(root -> content.varname) - 'a';
-//             return variable[index];
-//             break;
-//         }
-
-//         case T_CONST : {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return root -> content.value;
-//             break;
-//         }
-
-//         case T_ADD:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg + rreg;
-//             break;
-//         }
-//         case T_SUB: {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg - rreg;
-//             break;
-//         }
-//         case T_MUL:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg * rreg;
-//             break;
-//         }
-//         case T_DIV:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg/ rreg;
-//             break;
-//         }
-//         case T_ASSG:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             variable[*(root -> left ->content.varname)-'a'] = rreg;
-//             return -1;
-//             break;
-//         }
-
-//         case T_LT:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg < rreg;
-//             break;
-//         }
-//         case T_GT:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg > rreg;
-//             break;
-//         }
-//         case T_LE: {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg <= rreg;
-//             break;
-//         }
-//         case T_GE : {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg >= rreg;
-//             break;
-//         }
-//         case T_EQ : {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg == rreg;
-//             break;
-//         }
-//         case T_NE: {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             return lreg != rreg;
-//             break;
-//         }
-//         case T_READ: {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             int index = *(root -> left -> content.varname) - 'a';
-//             scanf("%d",&variable[index]);
-//             return -1;
-//             break;
-//         }
-//         case T_WRITE : {
-//             int lreg = eval(root -> left, variable);
-//             int rreg = eval(root -> right, variable);
-//             printf("%d",lreg);
-//             return -1;
-//             break;
-//         }
-//         case T_WHILE:{
-//             int lreg = eval(root -> left, variable);
-//             int rreg;
-//             while(lreg){
-//                 rreg = eval(root -> right, variable);
-//                 if (Bflag == 1){
-//                     Bflag = 0;
-//                     break;
-//                 }
-                
-//                 lreg = eval(root -> left, variable);
-//                 if (Cflag == 1){
-//                     Cflag = 0;
-//                     continue;
-//                 }
-//             }
-//             return -1;
-//             break;
-//         }
-//         case T_DWHILE : {
-//             int lreg,rreg;
-//             do{
-//                 lreg = eval(root -> left, variable);
-//                 if (Bflag == 1){
-//                     Bflag = 0;
-//                     break;
-//                 }
-                
-//                 rreg = eval(root -> right, variable);
-//                 if (Cflag == 1){
-//                     Cflag = 0;
-//                     continue;
-//                 }
-//             }while(rreg);
-//             return -1;
-//             break;
-//         }
-//         case T_REPEAT: {
-//             int lreg, rreg;
-//             do{
-//                 lreg = eval(root -> left, variable);
-//                 if (Bflag == 1){
-//                     Bflag = 0;
-//                     break;
-//                 }
-//                 rreg = eval(root -> right, variable);
-//                 if (Cflag == 1){
-//                     Cflag = 0;
-//                     continue;
-//                 }
-
-//             }while(!rreg);
-//             return -1;
-//             break;
-//         }
-//         case T_BREAK : {
-//             Bflag = 1;
-//             return -1;
-//             break;
-//         }
-//         case T_CONT : {
-//             Cflag = 1;
-//             return -1;
-//             break;
-//         }
-
-//         case T_IF: {
-//             int lreg = eval(root -> left, variable);
-//             if (lreg){
-//                 eval(root -> right -> left, variable);
-
-//             }else {
-//                     eval(root -> right -> right, variable);
-//             }
-//             return -1;
-
-//             break;
-//         }
-//         case T_CONN :{
-//             eval(root -> left, variable);
-//             if (Bflag == 1){
-//                 return -1;
-//             }
-//             if (Cflag == 1){
-//                 return -1;
-//             }
-//             eval(root -> right, variable);
-//             return -1;
-//         }
-//         default: {
-//             return -1;
-//             break;
-//         }
-
-//     }
-// }
 

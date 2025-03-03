@@ -60,6 +60,7 @@ number [0-9]+
 "int"       {return TYPE_INT;}
 "str"       {return TYPE_STR;}
 ","         {return SEP;}
+"&"         {return REF;}
 
 {number}    {
                 yylval.value = atoi(yytext);
