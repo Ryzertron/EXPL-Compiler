@@ -180,7 +180,24 @@ reg_index codeGen(node root, FILE* target){
                         return lreg;
                         break;
         
-        
+        case T_MOD :    lreg = codeGen(root -> left, target);
+                        rreg = codeGen(root -> right, target);
+                        if(root -> left -> type == T_ID || root -> left -> type == T_DEREF) {
+                            fprintf(target, "MOV R%d, [R%d]\n", lreg, lreg);
+                        }
+                        if(root -> right -> type == T_ID || root -> right -> type == T_DEREF) {
+                            fprintf(target, "MOV R%d, [R%d]\n", rreg, rreg);
+                        }
+                        R = getReg();
+                        fprintf(target, "MOV R%d, R%d\n", R, lreg); // Save lreg value
+                        fprintf(target, "DIV R%d, R%d\n", lreg, rreg); // lreg = lreg / rreg
+                        fprintf(target, "MUL R%d, R%d\n", lreg, rreg); // lreg = (lreg / rreg) * rreg
+                        fprintf(target, "SUB R%d, R%d\n", R, lreg); // R = R - lreg
+                        fprintf(target, "MOV R%d, R%d\n", lreg, R); // lreg = R
+                        freeReg(); // Free R
+                        freeReg(); // Free rreg
+                        return lreg;
+                        break;
                         
    
         case T_LE :     lreg = codeGen(root -> left, target);

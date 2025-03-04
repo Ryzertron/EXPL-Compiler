@@ -24,6 +24,7 @@ number [0-9]+
 "-"         {return SUB;}
 "*"         {return MUL;}
 "/"         {return DIV;}
+"%"         {return MOD;}
 "="         {return ASSIGN;}
 
 "<"         {return LT;}

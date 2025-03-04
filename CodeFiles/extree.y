@@ -34,7 +34,7 @@ tnode* SyntaxRoot;
 %token DELIM SEP SBLOCK EBLOCK 
 %token <root> NUMBER
 %token READ WRITE
-%token ADD SUB MUL DIV ASSIGN 
+%token ADD SUB MUL DIV MOD ASSIGN 
 %token GT LT NE EQ LE GE 
 %token IF THEN ELSE ENDIF
 %token WHILE DO ENDWHILE REPEAT UNTIL
@@ -50,7 +50,7 @@ tnode* SyntaxRoot;
 %left NE EQ
 %left GT LT GE LE
 %left ADD SUB
-%left MUL DIV
+%left MUL DIV MOD
 %right DEREF
 %right REF
 
@@ -130,6 +130,7 @@ expr: expr ADD expr         {$$ = createSyntaxNode(T_ADD, none, (data){.value = 
     | expr SUB expr         {$$ = createSyntaxNode(T_SUB, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr MUL expr         {$$ = createSyntaxNode(T_MUL, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr DIV expr         {$$ = createSyntaxNode(T_DIV, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
+    | expr MOD expr         {$$ = createSyntaxNode(T_MOD, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr LT expr          {$$ = createSyntaxNode(T_LT, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr GT expr          {$$ = createSyntaxNode(T_GT, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
     | expr LE expr          {$$ = createSyntaxNode(T_LE, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}

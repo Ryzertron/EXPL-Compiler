@@ -33,6 +33,7 @@ enum tnodeType{     // denotes the class of syntax node. Usage is specified belo
         T_SUB,      // '-' operator
         T_MUL,      // '*' operator
         T_DIV,      // '/' operator 
+        T_MOD,      // '%' operator
         T_LT,       // '<' operator    
         T_GT,       // '>' operator
         T_LE,       // '<=' operator
