@@ -106,6 +106,10 @@ statements: statements stmnt            {$$ = createSyntaxNode(T_CONN, none, (da
 stmnt: READ '(' Vsin ')' DELIM                                          {$$ = createSyntaxNode(T_READ, none, (data){.value = 0}, $<root>3, NULL,NULL);}
      | WRITE '(' expr ')' DELIM                                         {$$ = createSyntaxNode(T_WRITE, none, (data){.value = 0}, $<root>3, NULL,NULL);}
      | Vsin ASSIGN expr DELIM                                           {$$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, $<root>1, $<root>3,NULL);}
+     | MUL Vsin ASSIGN expr DELIM                                       {
+                                                                            node temp = createSyntaxNode(T_DEREF,($<root>2 -> dtype - 1),(data){.value = 0},$<root>2,NULL,NULL);
+                                                                            $$ = createSyntaxNode(T_ASSG, none, (data){.value = 0}, temp, $<root>4,NULL);
+                                                                        }
      | IF '(' expr ')' THEN statements ELSE statements ENDIF DELIM      {
                                                                             node then = createSyntaxNode(T_THEN, none, (data){.value = 0}, $<root>6, $<root>8,NULL); 
                                                                             $$ = createSyntaxNode(T_IF, none, (data){.value = 0}, $<root>3, then,NULL);

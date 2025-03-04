@@ -4,5 +4,7 @@ decl
 enddecl
 a = 12;
 b = &a;
+*b = 13;
 write(*b);
+write (a);
 end;

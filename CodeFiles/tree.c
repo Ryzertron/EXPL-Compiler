@@ -83,7 +83,7 @@ void compatible(node temp) {
     }
     else if (temp -> type == T_ASSG) {
 
-        if(temp -> left -> type != T_ID) {
+        if(temp -> left -> type != T_ID && temp -> left -> type != T_DEREF) {
             fprintf(stderr, "expected an identifier on the left of assignment\n");
             exit(1);
         }
@@ -92,6 +92,7 @@ void compatible(node temp) {
             compatible(temp -> right);
         }
         if(temp -> left -> dtype != temp -> right -> dtype){
+            printf("type of %s --- %d\n", temp -> left -> content.varname, temp -> left -> dtype);
             fprintf(stderr, "Type mismatch when assigning to %s\n",temp -> left -> content.varname);
             exit(1);
         }
