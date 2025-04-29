@@ -1,17 +1,31 @@
 #pragma once
 #include "tree.h"
 
-struct DNode {
-    struct tnode* data;
-    struct DNode* next;
-}typedef DNode;
 
-extern DNode* DSH;
+//==================================Global Declaration Stack=========================
 
-void pushDecl(tnode* root);
+struct GDNode {
+    char * name;
+    int  type;
+    int rows;
+    int cols;
+    struct GDNode* next;
+};
 
-DNode* popDecl();
+struct GDNode* NewGDNode(char* name, int type, int rows, int cols);
+void pushGDecl(struct GDNode* node);
+struct GDNode* popGDecl();
+void UpdateGST(int type);
 
-int DSEmpty();
+//==================================Local Declaration Stack=========================
 
-void CreateGST(dType type);
+struct LDNode {
+    char * name;
+    int type;
+    struct LDNode* next;
+};
+
+struct LDNode* NewLDNode(char* name, int type);
+void pushLDecl(struct LDNode* node);
+struct LDNode* popLDecl(struct LDNode* head);
+void UpdateLST(int type);

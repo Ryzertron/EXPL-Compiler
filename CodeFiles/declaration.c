@@ -1,50 +1,82 @@
 #include "declaration.h"
+#include "tree.h"
 #include "SymTable.h"
 
-DNode* DSH = NULL; //Declaration Stack head
 
-void pushDecl(tnode* root){
-    GST* temp = GSTLookup(root -> content.varname);
-    if (temp) {
-        fprintf(stderr,"Error: Redeclaration of identifier %s\n", root -> content.varname);
-        exit(1);
-    }
+//==================================Global Declaration Stack=========================
 
-    DNode* head = DSH;
-    while(head){
-        if(strcmp(head -> data -> content.varname, root -> content.varname) == 0){
-            fprintf(stderr, "Redclaration of identifier %s\n", root -> content.varname);
-            exit(1);
-        }
-        head = head -> next;
-    }
+struct GDNode* GDSH = NULL; //Global Declaration Stack head
 
-    DNode* New = (DNode*)malloc(sizeof(DNode));
-    New -> data = root;
-    New -> next = DSH;
-    DSH = New;
+struct GDNode* NewGDNode(char* name, int type, int rows, int cols) {
+    struct GDNode* temp = (struct GDNode*)malloc(sizeof(struct GDNode));
+    temp -> name = (char*)malloc(strlen(name));
+    strcpy(temp -> name, name);
+    temp -> type = type;
+    temp -> rows = rows;
+    temp -> cols = cols;
+    return temp;
 }
 
-DNode* popDecl(){
-    if(DSH) {
-        DNode* temp = DSH;
-        DSH = DSH -> next;
-        return temp;
+void pushGDecl(struct GDNode* node) {
+    node -> next = GDSH;
+    GDSH = node;
+}
+
+struct GDNode* popGDecl() {
+    if(GDSH == NULL) {
+        return NULL;
     }
-    return NULL;
+    struct GDNode* temp = GDSH;
+    GDSH = GDSH -> next;
+    return temp;
 }
 
-int DSEmpty() {
-    return DSH == NULL;
-}
-
-void CreateGST (dType type) {
-    DNode* temp = popDecl();
+void UpdateGST(int type) {
+    
+    struct GDNode* temp = popGDecl();
     while(temp) {
-        if(temp -> data -> dtype == 5) temp -> data -> dtype = type+1;
-        else temp -> data -> dtype = type;
-        GSTInstall(temp -> data, type, 0);
+        if(temp -> type == D_PTR) temp -> type = type + 1;
+        else temp -> type = type;
+        GSTInstall(temp -> name, temp -> type, temp -> rows, temp -> cols, -1);
+        free(temp -> name);
         free(temp);
-        temp = popDecl();
+        temp = popGDecl();  
+    }
+}
+
+//==================================Local Declaration Stack=========================
+
+struct LDNode* LDSH = NULL; //Local Declaration Stack head
+
+struct LDNode* NewLDNode(char* name, int type) {
+    struct LDNode* temp = (struct LDNode*)malloc(sizeof(struct LDNode));
+    temp -> name = (char*)malloc(strlen(name));
+    strcpy(temp -> name, name);
+    temp -> type = type;
+    return temp;
+}
+
+void pushLDecl(struct LDNode* node) {
+    node -> next = LDSH;
+    LDSH = node;
+}
+struct LDNode* popLDecl(struct LDNode* head) {
+    if(head == NULL) {
+        return NULL;
+    }
+    struct LDNode* temp = head;
+    LDSH = head -> next;
+    return head;
+}
+
+void UpdateLST(int type) {
+    struct LDNode* temp = popLDecl(LDSH);
+    while(temp)  {
+        if(temp -> type == D_PTR) temp -> type = type + 1;
+        else temp -> type = type;
+        LSTInstall(temp -> name, temp -> type);
+        free(temp -> name);
+        free(temp);
+        temp = popLDecl(LDSH);
     }
 }

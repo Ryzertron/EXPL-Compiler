@@ -20,48 +20,53 @@ number [0-9]+
 
 
 %%
-"+"         {return ADD;}
-"-"         {return SUB;}
-"*"         {return MUL;}
-"/"         {return DIV;}
-"%"         {return MOD;}
-"="         {return ASSIGN;}
+"+"             {return ADD;}
+"-"             {return SUB;}
+"*"             {return MUL;}
+"/"             {return DIV;}
+"%"             {return MOD;}
+"="             {return ASSIGN;}
+    
+"<"             {return LT;}
+">"             {return GT;}
+"<="            {return LE;}
+">="            {return GE;}
+"=="            {return EQ;}
+"!="            {return NE;}
+    
+"if"            {return IF;}
+"else"          {return ELSE;}
+"then"          {return THEN;}
+"endif"         {return ENDIF;}
+    
+"while"         {return WHILE;}
+"do"            {return DO;}
+"endwhile"      {return ENDWHILE;}
+"break"         {return BREAK;}
+"continue"      {return CONTINUE;}
+    
+"repeat"        {return REPEAT;}
+"until"         {return UNTIL;}
+    
+    
+"read"          {return READ;}
+"write"         {return WRITE;}
+    
+"{"             {return BOPEN;}
+"}"             {return BCLOSE;}
+"begin"         {return SBLOCK;}
+"end"           {return EBLOCK;}
+";"             {return DELIM;}
+"breakpoint"    {return BRKP;}
 
-"<"         {return LT;}
-">"         {return GT;}
-"<="        {return LE;}
-">="        {return GE;}
-"=="        {return EQ;}
-"!="        {return NE;}
-
-"if"        {return IF;}
-"else"      {return ELSE;}
-"then"      {return THEN;}
-"endif"     {return ENDIF;}
-
-"while"     {return WHILE;}
-"do"        {return DO;}
-"endwhile"  {return ENDWHILE;}
-"break"     {return BREAK;}
-"continue"  {return CONTINUE;}
-
-"repeat"    {return REPEAT;}
-"until"     {return UNTIL;}
-
-
-"read"      {return READ;}
-"write"     {return WRITE;}
-
-"begin"     {return SBLOCK;}
-"end"       {return EBLOCK;}
-";"         {return DELIM;}
-
-"decl"      {return DECL;}
-"enddecl"   {return ENDDECL;}
-"int"       {return TYPE_INT;}
-"str"       {return TYPE_STR;}
-","         {return SEP;}
-"&"         {return REF;}
+"decl"          {return DECL;}
+"enddecl"       {return ENDDECL;}
+"int"           {return TYPE_INT;}
+"str"           {return TYPE_STR;}
+","             {return SEP;}
+"&"             {return REF;}
+"main"          {return MAIN;}
+"return"        {return RET;}
 
 {number}    {
                 yylval.value = atoi(yytext);
@@ -69,16 +74,13 @@ number [0-9]+
             }
 
 {identifier} {
-                GST* entry = GSTLookup(yytext);
                 char* dupname = strdup(yytext);
-                
-                if(entry) yylval.root = createSyntaxNode(T_ID,entry -> dtype,(data){.varname = dupname},NULL,NULL,entry);
-                else yylval.root = createTempVarNode(T_ID,none,(data){.varname = dupname},NULL,NULL);
+                yylval.name = dupname;
                 return ID;
             }
 {strings} {
             char* dupstring = strndup(yytext+1, strlen(yytext+1)-1);
-            yylval.root = createSyntaxNode(T_CONST, D_STR, (data){.string = dupstring},NULL,NULL,NULL);
+            yylval.syn = createSyntaxNode(T_CONST, D_STR, (data){.string = dupstring},NULL,NULL);
             return STRING;
         }
 

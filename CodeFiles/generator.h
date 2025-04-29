@@ -7,7 +7,6 @@
 
 #define STACKBASE 4096
 extern int SP;
-extern int BP;
 
 struct loopStackElement {
     int start; // Start Label
@@ -31,7 +30,7 @@ void write(reg_index reg_number, FILE * target_file); // Macro for calling write
 
 void read(reg_index reg, FILE * target); // Macro for calling read system call
 
-int getAddress(char* varname); // Macro for fetching address from variable name (provisional)
+reg_index getAddress(node root, FILE *tsrget); // Macro for fetching address from variable name (provisional)
 
 void initxsm(FILE * target); // Initialising the .xsm file with headers and instruction to set SP and BP
 

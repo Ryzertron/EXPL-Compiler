@@ -50,6 +50,8 @@ enum tnodeType{     // denotes the class of syntax node. Usage is specified belo
         T_DWHILE,   // Do...while loop with statement on left and expr on the right. 
         T_DEREF,    // Dereference operator '*'
         T_REF,      // Address-of operator '&'
+        T_FUNC,
+        T_RET
 }typedef tnodeType;
 
 enum dType{         // Subtypes identify different types of nodes in a node class 
@@ -61,17 +63,19 @@ enum dType{         // Subtypes identify different types of nodes in a node clas
         D_PTR,      // Generic pointer type
 }typedef dType;
 
-typedef struct tnode {      // Syntax Node Structure
+struct tnode {      // Syntax Node Structure
     tnodeType type;
     dType dtype;
     data content;
     struct GST* GSTEntry;
+    struct LST* LSTEntry;
     struct tnode* left;
     struct tnode* right;
-}tnode;
+    struct ArgNode* argList; // for function calls only
+}typedef tnode;
 typedef tnode* node;
 
-node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right, struct GST* Entry);
+node createSyntaxNode(tnodeType type, dType subtype, data content, node left, node right);
 void compatible(node type);
-node createTempVarNode(tnodeType type, dType dtype, data content, node left, node right);
+node createFuncCallNode(char* name, struct ArgNode* arglist);
 //int eval(node root, int* variable);

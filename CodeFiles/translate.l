@@ -8,8 +8,12 @@ int isFirst = 1;
 FILE* output;
 %}
 
+fdecl   F[0-9]+:\n
+fref    F[0-9]+\n
+
 decl    L[0-9]+:\n
 ref     L[0-9]+\n
+
 %option prefix="LT"
 %%
 
@@ -28,6 +32,23 @@ ref     L[0-9]+\n
                 fprintf(output, "%d\n", address);
             }
         }
+
+{fdecl} {
+            if (isFirst) {
+                newLabel(LTtext);
+            }
+        }
+
+{fref}  {
+            if (isFirst) {
+                LINE++;
+            }
+            else {
+                int address = getAddr(LTtext);
+                fprintf(output, "%d\n", address);
+            }
+        }
+
 [\n]    {
             if (isFirst) {
                 LINE++;
