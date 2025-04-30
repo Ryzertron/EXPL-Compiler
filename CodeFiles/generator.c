@@ -360,7 +360,8 @@ reg_index codeGen(node root, FILE *target)
 
         case T_REF:
             R = getReg();
-            fprintf(target, "MOV R%d, %d\n", R, getAddress(root->left, target));
+            fprintf(target, "MOV R%d, R%d\n", R, getAddress(root->left, target));
+            freeReg();
             return R;
 
         case T_FUNC:
